@@ -56,7 +56,8 @@ public class AnalisisService {
 //        Clasificacion de la eficiencia en base al puntaje calculado.
         if (score >= 70.01) {
             categoria = "Ineficiente";
-            probabilidad = 0.87;
+/* test            probabilidad = 0.87;*/
+            probabilidad = score;
             recomendaciones = List.of(
                     "Reducir el uso de equipos durante los horarios pico",
                     "Evaluar equipos con alto consumo energético",
@@ -64,15 +65,18 @@ public class AnalisisService {
             );
         } else if (score < 70.01 && score >= 55.01) {
             categoria = "Moderado";
-            probabilidad = 0.75;
+/*  test          probabilidad = 0.75; */
+            probabilidad = score;
             recomendaciones = List.of("Apagar las pantallas mientras no estan en uso.");
         } else if (score < 55.01) {
             categoria = "Eficiente";
-            probabilidad = 0.70;
-//            probabilidad = score;
+            probabilidad = score;
+
+/*          Se remplaza la probabilidad con la intencion de hacer seguimiento.
+test          probabilidad = 0.70;*/
         }
 
-//        Calculo del costo en funcion del consumo ingresado.
+//      Calculo del costo en funcion del consumo ingresado.
         costo_estimado = consumo * 0.75;
 
         return new AnalisisResponse(categoria, probabilidad, recomendaciones, costo_estimado );
