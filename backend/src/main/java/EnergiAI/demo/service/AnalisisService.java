@@ -19,64 +19,72 @@ public class AnalisisService {
 
     public AnalisisResponse procesarAnalisisEnergetico(AnalisisRequest request) {
 
-        //        Obtener datos del dto.
+//        Obtener datos del dto.
         double consumo = request.getConsumo_kwh();
         boolean horarioPico = request.getUso_horario_pico();
         int cantidadEquipos = request.getCantidad_equipos();
         String tipoInmueble = request.getTipo_inmueble();
         int horasAltoConsumo = request.getHoras_alto_consumo();
 
-        //        Establecer puntaje en funcion del consumo.
+//        Establecer puntaje en funcion del consumo.
         double score = consumo / 10;
 
-        //        Asignar puntaje si el consumo se ve afectado por la hora pico.
+//        Asignar puntaje si el consumo se ve afectado por la hora pico.
         if (horarioPico) {
-            score += 80;
+            score += 8;
         }
 
-        //        Calcular puntaje por cantidad de equipos.
+//        Calcular puntaje por cantidad de equipos.
         score += (cantidadEquipos * 0.5);
 
-        //        Asignar puntaje por tipo de inmueble.
+//        Asignar puntaje por tipo de inmueble.
         switch (tipoInmueble.toLowerCase()) {
             case "casa":
                 score += 10;
                 break;
             case "oficina":
-                score += 6;
+                score += 7;
                 break;
             case "comercio":
-                score += 3;
+                score += 4;
                 break;
             default:
-                score += 1;
+                score += 6;
                 break;
         }
-        //        Calcular el puntaje en base a las horas de alto consumo.
+//        Calcular el puntaje en base a las horas de alto consumo.
         score += horasAltoConsumo * 0.8;
 
-        //        Se declaran variables para generar la respuesta de la peticion.
+//        Se declaran variables para generar la respuesta de la peticion.
         String categoria = null;
         double probabilidad = 0;
-        List<String> recomendaciones = List.of("Apagar las pantallas mientras no estan en uso.");
+        List<String> recomendaciones = List.of("");
         double costo_estimado = 0;
 
-        //        Clasificacion de la eficiencia en base al puntaje calculado.
-        if (score > 65.01) {
+//        Clasificacion de la eficiencia en base al puntaje calculado.
+        if (score >= 70.01) {
             categoria = "Ineficiente";
-            probabilidad = 0.87;
+/* test            probabilidad = 0.87;*/
+            probabilidad = score;
             recomendaciones = List.of(
                     "Reducir el uso de equipos durante los horarios pico",
                     "Evaluar equipos con alto consumo energético",
                     "Distribuir las actividades de mayor consumo a lo largo del día"
             );
-        } else if (score <= 65) {
+        } else if (score < 70.01 && score >= 55.01) {
+            categoria = "Moderado";
+/*  test          probabilidad = 0.75; */
+            probabilidad = score;
+            recomendaciones = List.of("Apagar las pantallas mientras no estan en uso.");
+        } else if (score < 55.01) {
             categoria = "Eficiente";
-//            probabilidad = score;
-            probabilidad = 0.75;
+            probabilidad = score;
+
+/*          Se remplaza la probabilidad con la intencion de hacer seguimiento.
+test          probabilidad = 0.70;*/
         }
 
-        //        Calculo del costo en funcion del consumo ingresado.
+//      Calculo del costo en funcion del consumo ingresado.
         costo_estimado = consumo * 0.75;
 
         // Guardar en base de datos
