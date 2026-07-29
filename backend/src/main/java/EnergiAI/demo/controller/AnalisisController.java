@@ -4,6 +4,7 @@ import EnergiAI.demo.dto.AnalisisRequest;
 import EnergiAI.demo.dto.AnalisisResponse;
 import EnergiAI.demo.model.AnalisisEnergetico;
 import EnergiAI.demo.service.AnalisisService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +26,7 @@ public class AnalisisController {
     }
 
     @PostMapping
-    public ResponseEntity<AnalisisResponse> analizarConsumo (@RequestBody AnalisisRequest request){
+    public ResponseEntity<AnalisisResponse> analizarConsumo (@Valid @RequestBody AnalisisRequest request){
         AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request);
         return ResponseEntity.ok(response);
     }
