@@ -2,12 +2,20 @@ package EnergiAI.demo.service;
 
 import EnergiAI.demo.dto.AnalisisRequest;
 import EnergiAI.demo.dto.AnalisisResponse;
+import EnergiAI.demo.model.AnalisisEnergetico;
+import EnergiAI.demo.repository.AnalisisEnergeticoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class AnalisisService {
+
+    private final AnalisisEnergeticoRepository repository;
+
+    public AnalisisService(AnalisisEnergeticoRepository repository) {
+        this.repository = repository;
+    }
 
     public AnalisisResponse procesarAnalisisEnergetico(AnalisisRequest request) {
 
@@ -79,6 +87,24 @@ test          probabilidad = 0.70;*/
 //      Calculo del costo en funcion del consumo ingresado.
         costo_estimado = consumo * 0.75;
 
+        // Guardar en base de datos
+        AnalisisEnergetico analisis = AnalisisEnergetico.builder()
+                .consumoKwh(consumo)
+                .usoHorarioPico(horarioPico)
+                .cantidadEquipos(cantidadEquipos)
+                .tipoInmueble(tipoInmueble)
+                .horasAltoConsumo(horasAltoConsumo)
+                .categoria(categoria)
+                .probabilidad(probabilidad)
+                .costoEstimadoMensual(costo_estimado)
+                .recomendaciones(String.join(", ", recomendaciones))
+                .build();
+        repository.save(analisis);
+
         return new AnalisisResponse(categoria, probabilidad, recomendaciones, costo_estimado );
+    }
+
+    public List<AnalisisEnergetico> obtenerHistorial() {
+        return repository.findAll();
     }
 }

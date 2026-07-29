@@ -2,16 +2,17 @@ package EnergiAI.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 
-/* Se agrega exclusion de bd para realizar pruebas de funcionamiento,
-en caso de agregar bd, eliminar las siguentes lineas y descomentar la linea sobre la clase.*/
-@SpringBootApplication (exclude = {DataSourceAutoConfiguration.class})
+// Se deshabilita temporalmente la exclusión de DataSourceAutoConfiguration
+// para permitir la conexión a la base de datos (H2 en local / MySQL/OCI en producción) y el uso de JPA Repositories.
+//import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+//@SpringBootApplication (exclude = {DataSourceAutoConfiguration.class})
 
-//@SpringBootApplication
+@SpringBootApplication
 public class DemoApplication {
 
 	public static void main(String[] args) {
+		// Punto de entrada principal para iniciar la aplicación Spring Boot
 		SpringApplication.run(DemoApplication.class, args);
 	}
 }
