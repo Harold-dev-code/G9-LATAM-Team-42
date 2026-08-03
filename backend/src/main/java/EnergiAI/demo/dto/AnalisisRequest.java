@@ -1,5 +1,6 @@
 package EnergiAI.demo.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -7,24 +8,31 @@ import jakarta.validation.constraints.Positive;
 /**
  * DTO de entrada para la evaluación de eficiencia energética.
  */
+
+@Schema(description = "Objeto de transferencia de datos para solicitar una evaluación de eficiencia energética")
 public class AnalisisRequest {
 
     @NotNull(message = "El consumo en kWh es obligatorio")
     @Positive(message = "El consumo debe ser un valor positivo")
+    @Schema(description = "Consumo menual en Kilovatios-hora", example = "450.5")
     private Double consumo_kwh;
 
     @NotNull(message = "El uso en horario pico es obligatorio")
+    @Schema(description = "Indica si el mayor uso se da en horas pico (18:00 a 23:00)", example = "true")
     private Boolean uso_horario_pico;
 
     @NotNull(message = "La cantidad de equipos es obligatoria")
     @Positive(message = "La cantidad de equipos debe ser mayor a cero")
+    @Schema(description = "Cantidad total de electrodomésticos o equipos eléctricos", example = "12")
     private Integer cantidad_equipos;
 
     @NotBlank(message = "El tipo de inmueble es obligatorio")
+    @Schema(description = "Tipo de propiedad analizada", example = "casa", allowableValues = {"casa", "oficina", "comercio"})
     private String tipo_inmueble;
 
     @NotNull(message = "Las horas de alto consumo son obligatorias")
     @Positive(message = "Las horas deben ser un número positivo")
+    @Schema(description = "Horas promedio de alto consumo", example = "6")
     private Integer horas_alto_consumo;
 
     // Constructor vacío
