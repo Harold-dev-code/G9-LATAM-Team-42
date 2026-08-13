@@ -12,8 +12,8 @@ public class RestDataScienceClient implements DataScienceClient {
 
     private final RestClient restClient;
 
-    public RestDataScienceClient(RestClient.Builder builder) {
-        this.restClient = builder.baseUrl("http://python-service:8080").build();
+    public RestDataScienceClient() {
+        this.restClient = RestClient.builder().baseUrl("http://python-service:8080").build();
     }
 
     @Override
