@@ -6,7 +6,67 @@
 
 ---
 
-## POST `/predict` — Predicción de Eficiencia Energética
+## Endpoint del Backend (Frontend → Backend)
+
+### POST `/analisis-energetico` — Solicitar Análisis Energético
+
+El frontend envía los datos del usuario al backend. El backend valida, delega la predicción a Flask, obtiene recomendaciones de Gemini (si aplica), calcula el costo y devuelve la respuesta completa.
+
+**Request Body:**
+
+```json
+{
+    "consumo_kwh": 350.0,
+    "tipo_inmueble": "Casa",
+    "personas_vivienda": 4,
+    "cantidad_equipos": 8,
+    "horas_alto_consumo": 5.0,
+    "uso_horario_pico": 1,
+    "antiguedad_inmueble": 15,
+    "tiene_aire_acondicionado": 0,
+    "tiene_calentador_electrico": 1,
+    "electrodomesticos_eficientes": 0
+}
+```
+
+**Response 200:**
+
+```json
+{
+    "categoria": "Moderado",
+    "probabilidad": 0.72,
+    "recomendaciones": [
+        "Apagar las pantallas y equipos cuando no estén en uso",
+        "Evaluar el uso de electrodomésticos con certificación de eficiencia energética",
+        "Consejo personalizado de Gemini IA..."
+    ],
+    "costo_estimado": 262.5
+}
+```
+
+**Response 400:**
+
+```json
+{
+    "status": 400,
+    "messages": [
+        "El consumo en kWh es obligatorio",
+        "La cantidad de personas en la vivienda es obligatoria"
+    ]
+}
+```
+
+### GET `/analisis-energetico/historial` — Consultar Historial
+
+Retorna todos los análisis previos almacenados en base de datos.
+
+---
+
+## Comunicación Interna: Backend → Servicio Flask
+
+## Comunicación Interna: Backend → Servicio Flask
+
+### POST `/predict` — Predicción de Eficiencia Energética
 
 ### Request (Backend → Flask)
 
@@ -74,7 +134,7 @@ Cuando uno o más campos son inválidos o están ausentes.
 
 ---
 
-## GET `/health` — Estado del Servicio
+## GET `/health` — Estado del Servicio Flask
 
 ### Response 200
 
