@@ -1,0 +1,4 @@
+# file: /home/harold/Applications/G9-LATAM-Team-42/datascience/inference_service/validation.py
+# hypothesis_version: 6.131.15
+
+[0.0, 24.0, 2000, 'Apartamento', 'Casa', 'Comercio', 'Oficina', 'antiguedad_inmueble', 'cantidad_equipos', 'consumo_kwh', 'horas_alto_consumo', 'personas_vivienda', 'tipo_inmueble', 'uso_horario_pico']

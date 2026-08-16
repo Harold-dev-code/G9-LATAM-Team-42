@@ -16,14 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AnalisisServiceTest {
     private final AnalisisEnergeticoRepository repository = Mockito.mock(AnalisisEnergeticoRepository.class);
     private final DataScienceClient dataScienceClient = Mockito.mock(DataScienceClient.class);
+    private final EnergiAI.demo.client.GeminiClient geminiClient = Mockito.mock(EnergiAI.demo.client.GeminiClient.class);
 
-    private final AnalisisService analisisService = new AnalisisService(repository, dataScienceClient);
+    private final AnalisisService analisisService = new AnalisisService(repository, dataScienceClient, geminiClient);
 
     @Test
     @DisplayName("Debe clasificar como eficiente cuando el cliente devuelve categoria eficiente")
     void procesar_ConsumoBajo_RetornarEficiente(){
-        AnalisisRequest request = new AnalisisRequest(150.0, false, 4, "casa", 2);
-        PrediccionResponse mockPrediccion = new PrediccionResponse("Eficiente", 30.0, List.of());
+        AnalisisRequest request = new AnalisisRequest(150.0, "Casa", 3, 4, 2.0, 0, 10, 0, 0, 0);
+        PrediccionResponse mockPrediccion = new PrediccionResponse("Eficiente", 0.30, List.of());
         Mockito.when(dataScienceClient.obtenerPrediccion(Mockito.any())).thenReturn(mockPrediccion);
         
         AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request);
@@ -35,14 +36,14 @@ public class AnalisisServiceTest {
     @Test
     @DisplayName("Debe clasificar como ineficiente cuando el cliente devuelve categoria ineficiente")
     void procesar_ConsumoAltoYHorarioPico_RetornarIneficiente(){
-        AnalisisRequest request = new AnalisisRequest(500.0, true, 15, "oficina", 8);
-        PrediccionResponse mockPrediccion = new PrediccionResponse("Ineficiente", 78.9, List.of("Recomendacion"));
+        AnalisisRequest request = new AnalisisRequest(500.0, "Oficina", 4, 15, 8.0, 1, 10, 0, 0, 0);
+        PrediccionResponse mockPrediccion = new PrediccionResponse("Ineficiente", 0.789, List.of("Recomendacion"));
         Mockito.when(dataScienceClient.obtenerPrediccion(Mockito.any())).thenReturn(mockPrediccion);
 
         AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request);
 
         assertEquals("Ineficiente", response.getCategoria());
-        assertEquals(78.9, response.getProbabilidad());
+        assertEquals(0.789, response.getProbabilidad());
     }
 
 }

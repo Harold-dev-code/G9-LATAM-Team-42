@@ -1,0 +1,4 @@
+# file: /home/harold/Applications/G9-LATAM-Team-42/datascience/inference_service/config.py
+# hypothesis_version: 6.131.15
+
+[5000, '..']

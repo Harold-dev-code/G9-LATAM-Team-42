@@ -29,45 +29,71 @@ public class AnalisisService {
 
     public AnalisisResponse procesarAnalisisEnergetico(AnalisisRequest request) {
 
-        // 1. Delegar el análisis de datos (Ya sea al Mock o a la API Python)
+        // 1. Asignar defaults a campos opcionales nulos antes de delegar
+        if (request.getUso_horario_pico() == null) {
+            request.setUso_horario_pico(0);
+        }
+        if (request.getAntiguedad_inmueble() == null) {
+            request.setAntiguedad_inmueble(10);
+        }
+        if (request.getTiene_aire_acondicionado() == null) {
+            request.setTiene_aire_acondicionado(0);
+        }
+        if (request.getTiene_calentador_electrico() == null) {
+            request.setTiene_calentador_electrico(0);
+        }
+        if (request.getElectrodomesticos_eficientes() == null) {
+            request.setElectrodomesticos_eficientes(0);
+        }
+
+        // 2. Delegar el análisis de datos (Ya sea al Mock o a la API Python)
         PrediccionResponse prediccion = dataScienceClient.obtenerPrediccion(request);
 
         // Creamos una lista modificable con las recomendaciones iniciales
         List<String> recomendacionesFinales = new ArrayList<>(prediccion.getRecomendaciones());
 
-        // 2. Integración con IA: Si no es eficiente, le pedimos un consejo a Gemini
-        if (!"Eficiente".equalsIgnoreCase(prediccion.getCategoria())){
-            String consejoIA = geminiClient.obtenerRecomendacionIA(
-                    prediccion.getCategoria(),
-                    request.getConsumo_kwh(),
-                    request.getCantidad_equipos()
-            );
-            recomendacionesFinales.add(consejoIA);
+        // 3. Integración con IA: Si no es eficiente, le pedimos un consejo a Gemini
+        if (!"Eficiente".equalsIgnoreCase(prediccion.getCategoria())) {
+            try {
+                String consejoIA = geminiClient.obtenerRecomendacionIA(
+                        prediccion.getCategoria(),
+                        request.getConsumo_kwh(),
+                        request.getCantidad_equipos()
+                );
+                recomendacionesFinales.add(consejoIA);
+            } catch (Exception e) {
+                recomendacionesFinales.add(
+                        "Se sugiere revisar los hábitos de consumo energético para mejorar la eficiencia.");
+            }
         }
 
-        // 3. Calcular la estimación financiera (Lógica de negocio propia del backend)
+        // 4. Calcular la estimación financiera (Lógica de negocio propia del backend)
         double costo_estimado = request.getConsumo_kwh() * 0.75;
 
-        // 4. Guardar en base de datos
+        // 5. Guardar en base de datos (incluye todos los nuevos campos)
         AnalisisEnergetico analisis = AnalisisEnergetico.builder()
                 .consumoKwh(request.getConsumo_kwh())
                 .usoHorarioPico(request.getUso_horario_pico())
                 .cantidadEquipos(request.getCantidad_equipos())
                 .tipoInmueble(request.getTipo_inmueble())
                 .horasAltoConsumo(request.getHoras_alto_consumo())
+                .personasVivienda(request.getPersonas_vivienda())
+                .antiguedadInmueble(request.getAntiguedad_inmueble())
+                .tieneAireAcondicionado(request.getTiene_aire_acondicionado())
+                .tieneCalentadorElectrico(request.getTiene_calentador_electrico())
+                .electrodomesticosEficientes(request.getElectrodomesticos_eficientes())
                 .categoria(prediccion.getCategoria())
                 .probabilidad(prediccion.getProbabilidad())
                 .costoEstimadoMensual(costo_estimado)
-                // Inclusión de nuestra nueva lista que incluye la IA
                 .recomendaciones(String.join(", ", recomendacionesFinales))
                 .build();
         repository.save(analisis);
 
-        // 5. Ensamblar la respuesta final
+        // 6. Ensamblar la respuesta final
         return new AnalisisResponse(
                 prediccion.getCategoria(),
                 prediccion.getProbabilidad(),
-                recomendacionesFinales, // Pasamos lista actualizada
+                recomendacionesFinales,
                 costo_estimado
         );
     }

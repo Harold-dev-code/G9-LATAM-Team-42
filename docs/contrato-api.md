@@ -1,34 +1,181 @@
+# Contrato API: Backend ↔ Servicio Flask de Predicción
+
 > [!IMPORTANT]
-> ### 📊 Sincronización Backend 🔄 Data Science
-> Este archivo define las variables exactas del análisis energético acordadas para la conexión entre el **Backend (Java)** y el **Modelo de IA (Python)**. 
-> podemos modificarlo a nuestras necesidades o conveniencias.
-> Antes de modificar o añadir cualquier campo en los DTOs de petición o respuesta, verifícalo aquí para evitar errores de tipado o nombres que rompan la comunicación con el modelo de datos.
-
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-## 📝Este es un ejemplo del Contrato de Datos: Backend 🔄 Modelo de IA
-
-Para asegurar que la integración de componentes no falle, se definen los siguientes nombres de variables y tipos de datos para la comunicación con el modelo de analítica.
-
-### 📤 Datos de Entrada (Input Backend -> Modelo)
-Al solicitar un análisis de eficiencia energética, el Backend enviará un objeto con la siguiente estructura:
-
-| Variable | Tipo de Dato | Descripción / Ejemplo |
-| :--- | :--- | :--- |
-| `consumo_kwh` | Numérico (Double/Float) | Consumo registrado en kilovatios hora (ej: `150.5`). |
-| `uso_horario_pico` | Cadena (String) o Booleano | Indica si consume en horas de alta demanda (ej: `"Mañana"`, `"Tarde"`, `"Noche"`, true, false). |
-| `cantidad_equipos` | Entero (Integer) | Número de electrodomésticos o equipos conectados (ej: `5`). |
-| `tipo_inmueble` | Cadena (String) | Tipo de propiedad a evaluar (ej: `"Residencial"`, `"Comercial"`). |
-| `horas_alto_consumo` | Entero (Integer) | Cantidad de horas estimadas de uso intenso al día (ej: `6`). |
+> Este documento define la estructura exacta de comunicación entre el **Backend (Spring Boot / Java)** y el **Servicio Flask de Inferencia ML (Python)**.
+> Cualquier cambio en los campos, tipos o rangos debe reflejarse aquí primero.
 
 ---
 
-### 📥 Datos de Salida (Output Modelo -> Backend)
-El modelo procesará los datos y retornará una respuesta con la siguiente estructura exacta:
+## Endpoint del Backend (Frontend → Backend)
 
-*   **`categoria`** *(String)*: Clasificación del consumo. Devolverá únicamente uno de estos tres valores de forma estricta:
-    *   `Eficiente`
-    *   `Moderado`
-    *   `Inefficiente`
-*   **`probabilidad`** *(Double/Float)*: Valor numérico continuo indexado **entre 0 y 1** que representa la certeza del modelo.
-    > 💡 **Nota de Formato:** El modelo maneja internamente este valor decimal (ej: `0.85`) para representar los porcentajes de confianza. La conversión visual a formato legible (ej: `85%`) se procesará posteriormente en las capas de presentación de la interfaz.
+### POST `/analisis-energetico` — Solicitar Análisis Energético
+
+El frontend envía los datos del usuario al backend. El backend valida, delega la predicción a Flask, obtiene recomendaciones de Gemini (si aplica), calcula el costo y devuelve la respuesta completa.
+
+**Request Body:**
+
+```json
+{
+    "consumo_kwh": 350.0,
+    "tipo_inmueble": "Casa",
+    "personas_vivienda": 4,
+    "cantidad_equipos": 8,
+    "horas_alto_consumo": 5.0,
+    "uso_horario_pico": 1,
+    "antiguedad_inmueble": 15,
+    "tiene_aire_acondicionado": 0,
+    "tiene_calentador_electrico": 1,
+    "electrodomesticos_eficientes": 0
+}
+```
+
+**Response 200:**
+
+```json
+{
+    "categoria": "Moderado",
+    "probabilidad": 0.72,
+    "recomendaciones": [
+        "Apagar las pantallas y equipos cuando no estén en uso",
+        "Evaluar el uso de electrodomésticos con certificación de eficiencia energética",
+        "Consejo personalizado de Gemini IA..."
+    ],
+    "costo_estimado": 262.5
+}
+```
+
+**Response 400:**
+
+```json
+{
+    "status": 400,
+    "messages": [
+        "El consumo en kWh es obligatorio",
+        "La cantidad de personas en la vivienda es obligatoria"
+    ]
+}
+```
+
+### GET `/analisis-energetico/historial` — Consultar Historial
+
+Retorna todos los análisis previos almacenados en base de datos.
+
+---
+
+## Comunicación Interna: Backend → Servicio Flask
+
+## Comunicación Interna: Backend → Servicio Flask
+
+### POST `/predict` — Predicción de Eficiencia Energética
+
+### Request (Backend → Flask)
+
+El Backend envía un JSON con los **10 campos del usuario** (5 obligatorios + 5 opcionales).
+
+| Campo | Tipo | Rango / Valores | Obligatorio | Default |
+|-------|------|-----------------|-------------|---------|
+| `consumo_kwh` | Float | 50 – 2000 | ✅ Sí | — |
+| `tipo_inmueble` | String | `"Casa"`, `"Oficina"`, `"Apartamento"`, `"Comercio"` | ✅ Sí | — |
+| `personas_vivienda` | Integer | 1 – 10 | ✅ Sí | — |
+| `cantidad_equipos` | Integer | 1 – 20 | ✅ Sí | — |
+| `horas_alto_consumo` | Float | 0.0 – 24.0 | ✅ Sí | — |
+| `uso_horario_pico` | Integer | 0 ó 1 | ❌ No | 0 |
+| `antiguedad_inmueble` | Integer | 2 – 31 | ❌ No | 10 |
+| `tiene_aire_acondicionado` | Integer | 0 ó 1 | ❌ No | 0 |
+| `tiene_calentador_electrico` | Integer | 0 ó 1 | ❌ No | 0 |
+| `electrodomesticos_eficientes` | Integer | 0 ó 1 | ❌ No | 0 |
+
+**Ejemplo de request:**
+
+```json
+{
+    "consumo_kwh": 350.0,
+    "tipo_inmueble": "Casa",
+    "personas_vivienda": 4,
+    "cantidad_equipos": 8,
+    "horas_alto_consumo": 5.0,
+    "uso_horario_pico": 1,
+    "antiguedad_inmueble": 15,
+    "tiene_aire_acondicionado": 0,
+    "tiene_calentador_electrico": 1,
+    "electrodomesticos_eficientes": 0
+}
+```
+
+### Response 200 (Flask → Backend)
+
+| Campo | Tipo | Valores posibles |
+|-------|------|------------------|
+| `categoria` | String | `"Eficiente"`, `"Moderado"`, `"Ineficiente"` |
+| `probabilidad` | Float | 0.0 – 1.0 |
+
+```json
+{
+    "categoria": "Moderado",
+    "probabilidad": 0.72
+}
+```
+
+> **Nota:** `probabilidad` representa la confianza del modelo en la categoría asignada (valor decimal entre 0 y 1).
+
+### Response 400 — Error de Validación
+
+Cuando uno o más campos son inválidos o están ausentes.
+
+```json
+{
+    "error": "Validation failed",
+    "details": [
+        "El campo 'consumo_kwh' es obligatorio",
+        "El valor de 'personas_vivienda' debe estar entre 1 y 10"
+    ]
+}
+```
+
+---
+
+## GET `/health` — Estado del Servicio Flask
+
+### Response 200
+
+```json
+{
+    "status": "ok",
+    "model_loaded": true
+}
+```
+
+---
+
+## Features Calculados (Internos de Flask)
+
+Los siguientes campos son calculados internamente por el Servicio Flask y **NO deben ser enviados por el Backend**:
+
+| Campo | Fórmula |
+|-------|---------|
+| `consumo_promedio_diario` | `consumo_kwh / 30` |
+| `ratio_persona_kwh` | `consumo_kwh / personas_vivienda` |
+| `consumo_por_equipo` | `consumo_kwh / cantidad_equipos` |
+| `consumo_por_hora_pico` | `consumo_kwh / horas_alto_consumo` (0 si horas == 0) |
+| `costo_estimado_mensual` | `consumo_kwh * 0.75` |
+
+Estos campos existen porque el modelo ML fue entrenado con 15 features. El Servicio Flask los calcula antes de invocar `model.predict()`.
+
+---
+
+## Configuración de Conexión
+
+| Parámetro | Valor |
+|-----------|-------|
+| URL (producción) | `http://python-service:5000` |
+| Timeout de conexión | 5000 ms |
+| Timeout de lectura | 10000 ms |
+
+---
+
+## Notas de Integración
+
+- El Backend valida los campos antes de enviarlos a Flask (fail-fast para el usuario).
+- Flask aplica una segunda validación como línea de defensa antes del modelo.
+- Los campos opcionales con valor `null` en el Backend se envían con su default antes de la llamada a Flask.
+- La serialización usa `snake_case` para todos los campos JSON.

@@ -1,0 +1,20 @@
+# Entornos virtuales y dependencias genéricos
+.venv/
+venv/
+**/venv/
+__pycache__/
+.pytest_cache/
+.hypothesis/
+datascience/inference_service/.venv/
+datascience/inference_service/.pytest_cache/
+datascience/inference_service/.hypothesis/
+
+# Carpetas de Kiro
+.kiro/
+
+# Historial de desarrollo (local)
+docs/historial.md
+
+# jqwik test database
+backend/.jqwik-database
+.jqwik-database

@@ -22,10 +22,15 @@ public class AnalisisEnergetico {
 
     // Campos de entrada
     private Double consumoKwh;
-    private Boolean usoHorarioPico;
+    private Integer usoHorarioPico;
     private Integer cantidadEquipos;
     private String tipoInmueble;
-    private Integer horasAltoConsumo;
+    private Double horasAltoConsumo;
+    private Integer personasVivienda;
+    private Integer antiguedadInmueble;
+    private Integer tieneAireAcondicionado;
+    private Integer tieneCalentadorElectrico;
+    private Integer electrodomesticosEficientes;
 
     // Campos de resultado
     private String categoria;
