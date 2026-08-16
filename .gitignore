@@ -14,3 +14,6 @@ datascience/inference_service/.hypothesis/
 
 # Historial de desarrollo (local)
 docs/historial.md
+
+# jqwik test database
+backend/.jqwik-database/
