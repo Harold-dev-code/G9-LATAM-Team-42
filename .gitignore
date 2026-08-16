@@ -16,4 +16,5 @@ datascience/inference_service/.hypothesis/
 docs/historial.md
 
 # jqwik test database
-backend/.jqwik-database/
+backend/.jqwik-database
+.jqwik-database
