@@ -1,0 +1,4 @@
+# file: /home/harold/Applications/G9-LATAM-Team-42/datascience/inference_service/feature_engine.py
+# hypothesis_version: 6.131.15
+
+[0.0, 0.01, 0.75, 'antiguedad_inmueble', 'cantidad_equipos', 'consumo_kwh', 'consumo_por_equipo', 'horas_alto_consumo', 'personas_vivienda', 'ratio_persona_kwh', 'tipo_inmueble', 'uso_horario_pico']

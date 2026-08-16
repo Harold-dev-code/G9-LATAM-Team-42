@@ -37,7 +37,7 @@ public class AnalisisControllerTest {
     @Test
     @DisplayName("Debe devolver HTTP 200 y el JSON de respuesta cuando la solicitud es válida")
     void analizarConsumo_SolicitudValida_Devuelve200() throws Exception{
-        AnalisisRequest request = new AnalisisRequest(300.0, false, 5, "casa", 4);
+        AnalisisRequest request = new AnalisisRequest(300.0, "Casa", 3, 5, 4.0, 0, 10, 0, 0, 0);
         AnalisisResponse responseMock = new AnalisisResponse("Eficiente", 0.75, List.of("Buen trabajo"), 225.0);
 
         Mockito.when(analisisService.procesarAnalisisEnergetico(Mockito.any(AnalisisRequest.class)))
@@ -54,8 +54,8 @@ public class AnalisisControllerTest {
     @Test
     @DisplayName("Debe devolver HTTP 400 Bad Request cuando el consumo es negativo (Bean Validation")
     void analizarConsumo_ConsumoNegativo_Retornar400() throws Exception{
-        //Consumo en negativo viola la anotacion @Positive
-        AnalisisRequest requestInvalido = new AnalisisRequest(-50.0, false, 5, "casa", 4);
+        //Consumo en negativo viola la anotacion @Min(50)
+        AnalisisRequest requestInvalido = new AnalisisRequest(-50.0, "Casa", 3, 5, 4.0, 0, 10, 0, 0, 0);
         mockMvc.perform(post("/analisis-energetico")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(requestInvalido)))

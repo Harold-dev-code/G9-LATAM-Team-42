@@ -1,0 +1,4 @@
+# file: /home/harold/Applications/G9-LATAM-Team-42/datascience/inference_service/app.py
+# hypothesis_version: 6.131.15
+
+[400, 500, '/health', '/predict', '0.0.0.0', 'GET', 'POST', 'Prediction error: %s', 'Prediction failed', 'Validation failed', '__main__', 'body', 'categoria', 'details', 'error', 'model_loaded', 'ok', 'probabilidad', 'status']
