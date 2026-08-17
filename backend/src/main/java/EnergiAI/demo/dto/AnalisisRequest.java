@@ -64,6 +64,9 @@ public class AnalisisRequest {
     @Schema(description = "Indica si los electrodomésticos son eficientes (0=No, 1=Sí)", example = "0")
     private Integer electrodomesticos_eficientes;
 
+    @Schema(description = "Tarifa del kWh en USD que aplica el usuario", example = "0.75")
+    private Double tarifa_kwh;
+
     // Constructor vacío
     public AnalisisRequest() {
     }
@@ -166,5 +169,13 @@ public class AnalisisRequest {
 
     public void setElectrodomesticos_eficientes(Integer electrodomesticos_eficientes) {
         this.electrodomesticos_eficientes = electrodomesticos_eficientes;
+    }
+
+    public Double getTarifa_kwh() {
+        return tarifa_kwh;
+    }
+
+    public void setTarifa_kwh(Double tarifa_kwh) {
+        this.tarifa_kwh = tarifa_kwh;
     }
 }

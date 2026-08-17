@@ -21,7 +21,7 @@ import java.util.List;
  * en la categoría asignada.
  */
 @Component
-@Profile("dev")
+@Profile("mock")
 public class MockDataScienceClient implements DataScienceClient {
 
     // Defaults idénticos a los del Servicio Flask

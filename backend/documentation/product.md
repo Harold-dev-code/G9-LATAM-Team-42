@@ -5,20 +5,21 @@ EnergiAI es un servicio de backend especializado en el análisis de eficiencia e
 ## Arquitectura
 
 ```
-Frontend → Backend (Spring Boot) → Servicio Flask (ML) → Modelo Árbol de Decisión
-                                  → Gemini API (Recomendaciones IA)
-                                  → Base de Datos (Persistencia)
+Frontend (React 19 + Vite 8) → Backend (Spring Boot 4.1) → Servicio Flask (ML) → Modelo Árbol de Decisión
+                                                          → Gemini API (Recomendaciones IA + Conversión de moneda)
+                                                          → Base de Datos (Persistencia)
 ```
 
 ## Funcionalidades principales
 
-- **Análisis Energético:** Recibe 10 campos de entrada (5 obligatorios + 5 opcionales), delega la predicción al modelo ML y retorna clasificación + recomendaciones + costo estimado.
+- **Análisis Energético:** Recibe 11 campos de entrada (5 obligatorios + 6 opcionales), delega la predicción al modelo ML y retorna clasificación + recomendaciones + costo estimado.
 - **Integración ML:** Se conecta al Servicio Flask de inferencia que ejecuta un modelo de Árbol de Decisión (scikit-learn) para clasificar eficiencia en 3 categorías: Eficiente, Moderado, Ineficiente.
-- **Recomendaciones IA (Gemini):** Cuando la categoría es "Moderado" o "Ineficiente", consulta a Gemini API para generar una recomendación personalizada. Si Gemini falla, usa un mensaje fallback.
-- **Estimación de Costos:** Calcula `costo_estimado = consumo_kwh * 0.75`.
-- **Persistencia:** Almacena cada análisis en base de datos con todos los campos de entrada, resultado y recomendaciones.
+- **Recomendaciones IA (Gemini):** Consulta a Gemini API para generar recomendaciones personalizadas y sugerencias de conversión de moneda a monedas LATAM (COP, MXN, DOP, ARS). Si Gemini falla, usa un mensaje fallback según la categoría.
+- **Estimación de Costos:** Calcula `costo_estimado = consumo_kwh * tarifa_kwh` donde la tarifa es configurable por el usuario (default 0.75 USD/kWh).
+- **Persistencia:** Almacena cada análisis en base de datos con todos los campos de entrada, resultado, tarifa aplicada y recomendaciones.
 - **Historial:** Endpoint GET para consultar análisis previos.
 - **Validación:** Bean Validation en el DTO con rangos, patrones y campos obligatorios.
+- **CORS:** Configurado para permitir peticiones desde frontend en localhost:5173 y localhost:3000.
 
 ## Campos de entrada (AnalisisRequest)
 
@@ -34,6 +35,7 @@ Frontend → Backend (Spring Boot) → Servicio Flask (ML) → Modelo Árbol de 
 | `tiene_aire_acondicionado` | Integer | 0, 1 | No | 0 |
 | `tiene_calentador_electrico` | Integer | 0, 1 | No | 0 |
 | `electrodomesticos_eficientes` | Integer | 0, 1 | No | 0 |
+| `tarifa_kwh` | Double | > 0 | No | 0.75 |
 
 ## Endpoints
 
@@ -47,7 +49,7 @@ Frontend → Backend (Spring Boot) → Servicio Flask (ML) → Modelo Árbol de 
 - **Framework:** Spring Boot 4.1.0, Java 21
 - **Persistencia:** Spring Data JPA, Hibernate 7.4, Flyway
 - **Base de datos:** H2 (dev) / Oracle Autonomous DB (prod)
-- **Seguridad:** Spring Security (autenticación básica)
+- **Seguridad:** Spring Security (CORS habilitado + autenticación básica)
 - **Documentación API:** SpringDoc OpenAPI 3 (Swagger UI)
 - **Testing:** JUnit 5, Mockito, jqwik (property-based testing)
 - **Build:** Maven
@@ -56,8 +58,9 @@ Frontend → Backend (Spring Boot) → Servicio Flask (ML) → Modelo Árbol de 
 
 | Perfil | DataScienceClient | Base de datos | Configuración |
 |--------|-------------------|---------------|---------------|
-| `dev` | MockDataScienceClient (heurística local) | H2 en memoria | application-dev.properties |
+| `dev` | RestDataScienceClient (HTTP → Flask localhost:5000) | H2 en memoria | application-dev.properties |
 | `prod` | RestDataScienceClient (HTTP → Flask) | Oracle (OCI) | application-prod.properties |
+| `mock` | MockDataScienceClient (heurística local) | H2 en memoria | — |
 
 ## Estructura del proyecto
 
@@ -66,9 +69,9 @@ backend/src/main/java/EnergiAI/demo/
 ├── DemoApplication.java
 ├── client/
 │   ├── DataScienceClient.java          (interface)
-│   ├── MockDataScienceClient.java      (perfil dev)
-│   ├── RestDataScienceClient.java      (perfil prod)
-│   └── GeminiClient.java              (recomendaciones IA)
+│   ├── MockDataScienceClient.java      (perfil mock)
+│   ├── RestDataScienceClient.java      (perfil dev + prod)
+│   └── GeminiClient.java              (recomendaciones IA + conversión moneda)
 ├── controller/
 │   └── AnalisisController.java
 ├── dto/
