@@ -1,12 +1,12 @@
-# EnergiAI ⚡🧠
+# JouleAI ⚡
 
-EnergiAI es un **asesor energético automático** diseñado para hogares y pequeños negocios. A través de inteligencia artificial, analiza el perfil de consumo eléctrico de los usuarios para clasificar su eficiencia, estimar su gasto mensual y ofrecer recomendaciones personalizadas y accionables de ahorro.
+JouleAI es un **asesor energético automático** diseñado para hogares y pequeños negocios. A través de inteligencia artificial, analiza el perfil de consumo eléctrico de los usuarios para clasificar su eficiencia, estimar su gasto mensual y ofrecer recomendaciones personalizadas y accionables de ahorro.
 
 El proyecto es desarrollado como parte de la simulación laboral de **No Country** por el equipo **G9-LATAM-Team-42**.
 
 ---
 
-## 📋 ¿Qué hace EnergiAI? (Alcance del MVP)
+## ¿Qué hace JouleAI? (Alcance del MVP)
 Cuando un usuario envía sus datos de consumo, el sistema procesa la información y devuelve en segundos:
 1. **Clasificación de Perfil:** Determina si el consumo es *Eficiente*, *Moderado* o *Ineficiente* usando un modelo de Machine Learning (Árbol de Decisión).
 2. **Recomendaciones de Ahorro:** Entrega consejos prácticos y personalizados generados por IA (Gemini), adaptados al nivel de eficiencia.
@@ -16,7 +16,7 @@ Cuando un usuario envía sus datos de consumo, el sistema procesa la informació
 
 ---
 
-## 🛠️ Arquitectura y Flujo Técnico
+## Arquitectura y Flujo Técnico
 El sistema está diseñado bajo una **arquitectura de microservicios**:
 
 ```
@@ -40,7 +40,7 @@ Backend → Frontend (categoria + probabilidad + recomendaciones + costo)
 
 ---
 
-## 🚀 Cómo ejecutar localmente
+## Cómo ejecutar localmente
 
 ### Prerrequisitos
 - Java 21, Maven
@@ -77,7 +77,7 @@ Ir a `http://localhost:5173` y usar el formulario "Nuevo análisis".
 
 ---
 
-## 🧪 Tests
+## Tests
 
 | Capa | Framework | Comando |
 |------|-----------|---------|
@@ -87,7 +87,7 @@ Ir a `http://localhost:5173` y usar el formulario "Nuevo análisis".
 
 ---
 
-## 📁 Estructura del monorepo
+## Estructura del monorepo
 
 ```
 G9-LATAM-Team-42/
