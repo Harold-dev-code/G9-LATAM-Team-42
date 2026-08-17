@@ -36,6 +36,7 @@ public class AnalisisEnergetico {
     private String categoria;
     private Double probabilidad;
     private Double costoEstimadoMensual;
+    private Double tarifaKwh;
 
     // Recomendaciones
     @Column(columnDefinition = "TEXT")

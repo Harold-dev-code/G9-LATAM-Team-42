@@ -61,6 +61,20 @@ Registro de los hitos y cambios realizados en el desarrollo del backend.
 - [x] Fix: `gemini.api.key` con default para tests (`${GEMINI_API_KEY:dummy-key-for-tests}`)
 - [x] `maven-surefire-plugin` configurado para detectar `*PropertyTest.java`
 
+### Fase 7: Tarifa Configurable y CORS (17-ago-2026)
+- [x] CORS habilitado en SecurityConfig (localhost:5173, localhost:3000)
+- [x] `RestDataScienceClient` activo en perfiles `dev` y `prod`
+- [x] `MockDataScienceClient` movido al perfil `mock`
+- [x] Campo `tarifa_kwh` agregado a `AnalisisRequest` DTO (Double, opcional, default 0.75)
+- [x] Campo `tarifaKwh` agregado a entidad `AnalisisEnergetico`
+- [x] Fórmula de costo actualizada: `consumo_kwh * tarifa_kwh`
+- [x] `application-dev.properties`: URL del servicio Flask (localhost:5000)
+- [x] Gemini se consulta siempre (no solo para "no eficiente")
+- [x] Prompt de Gemini ampliado: recomendación + conversión de moneda LATAM
+- [x] GeminiClient lanza excepción cuando falla (en vez de fallback silencioso)
+- [x] Fallback en AnalisisService: "¡Excelente!" para Eficiente, mensaje genérico para otros
+- [x] Fix: `new ArrayList<>(prediccion.getRecomendaciones())` → null-safe
+
 ## Estado actual de tests
 
 | Tipo | Cantidad | Estado |
@@ -70,7 +84,8 @@ Registro de los hitos y cambios realizados en el desarrollo del backend.
 | **Total** | **20** | **✅ 0 errores** |
 
 ## Siguientes Pasos
+- [ ] Configurar API key de Gemini para recomendaciones IA en vivo
 - [ ] Dockerizar el backend para despliegue junto con Flask
 - [ ] Configurar CI/CD con GitHub Actions
-- [ ] Test de integración E2E (Backend + Flask + H2)
+- [ ] Test de integración E2E automatizado (Backend + Flask + Frontend)
 - [ ] Migrar de H2 a Oracle Autonomous Database (OCI Always Free) en producción

@@ -25,9 +25,12 @@ El frontend envía los datos del usuario al backend. El backend valida, delega l
     "antiguedad_inmueble": 15,
     "tiene_aire_acondicionado": 0,
     "tiene_calentador_electrico": 1,
-    "electrodomesticos_eficientes": 0
+    "electrodomesticos_eficientes": 0,
+    "tarifa_kwh": 0.75
 }
 ```
+
+> **Nota:** `tarifa_kwh` es opcional (default 0.75 USD/kWh). Permite al usuario ajustar la tarifa según su región/país.
 
 **Response 200:**
 

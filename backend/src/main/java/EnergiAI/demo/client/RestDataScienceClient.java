@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-@Profile("prod")
+@Profile("prod | dev")
 public class RestDataScienceClient implements DataScienceClient {
 
     private final RestClient restClient;

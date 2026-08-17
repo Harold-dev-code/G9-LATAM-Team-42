@@ -1,122 +1,126 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
+import Sidebar from "./components/Sidebar";
+import TopBar from "./components/TopBar";
+import AnalysisForm from "./components/AnalysisForm";
+import ResultPanel from "./components/ResultPanel";
+import HistoryView from "./components/HistoryView";
+import HomeView from "./components/HomeView";
+import ReportsView from "./components/ReportsView";
+import { postAnalisis, ApiError } from "./api/energiaiClient";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function getInitialTheme() {
+  const stored = window.localStorage.getItem("energiai-theme");
+  if (stored === "day" || stored === "night") return stored;
+  return "day";
 }
 
-export default App
+function getInitialCollapsed() {
+  return window.localStorage.getItem("energiai-sidebar-collapsed") === "true";
+}
+
+export default function App() {
+  const [section, setSection] = useState("inicio");
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [theme, setTheme] = useState(getInitialTheme);
+  const [collapsed, setCollapsed] = useState(getInitialCollapsed);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    window.localStorage.setItem("energiai-theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    window.localStorage.setItem("energiai-sidebar-collapsed", String(collapsed));
+  }, [collapsed]);
+
+  function toggleTheme() {
+    setTheme((prev) => (prev === "night" ? "day" : "night"));
+  }
+
+  async function handleSubmit(payload) {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await postAnalisis(payload);
+      setResult(response);
+      setHistoryRefreshKey((key) => key + 1);
+    } catch (err) {
+      setResult(null);
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "No se pudo conectar con el servicio de JouleAI. Intenta de nuevo más tarde."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleNavigate(key) {
+    setSection(key);
+    setMobileMenuOpen(false);
+  }
+
+  return (
+    <div className={`app-shell ${collapsed ? "sidebar-is-collapsed" : ""}`}>
+      <Sidebar
+        active={section}
+        onNavigate={handleNavigate}
+        collapsed={collapsed}
+        onToggleCollapsed={() => setCollapsed((c) => !c)}
+        mobileOpen={mobileMenuOpen}
+        onCloseMobile={() => setMobileMenuOpen(false)}
+      />
+
+      <div className="app-content">
+        <TopBar section={section} onNavigate={handleNavigate} theme={theme} onToggleTheme={toggleTheme} onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)} mobileMenuOpen={mobileMenuOpen} />
+
+        <main className="app-main">
+          {section === "inicio" && (
+            <HomeView onNavigate={handleNavigate} refreshKey={historyRefreshKey} />
+          )}
+
+          {section === "analisis" && (
+            <>
+              <header className="section-header">
+                <span className="eyebrow">Diagnóstico</span>
+                <h1>¿Qué tan eficiente es tu consumo?</h1>
+                <p className="text-muted">
+                  Ingresa los datos de tu último período de facturación y JouleAI
+                  clasificará tu perfil de eficiencia con recomendaciones a la medida.
+                </p>
+              </header>
+
+              <div className="analysis-grid">
+                <AnalysisForm onSubmit={handleSubmit} submitting={submitting} />
+                <ResultPanel result={result} error={error} loading={submitting} />
+              </div>
+            </>
+          )}
+
+          {section === "historial" && (
+            <>
+              <header className="section-header">
+                <span className="eyebrow">Seguimiento</span>
+                <h1>Historial de análisis</h1>
+                <p className="text-muted">
+                  Evolución de tu consumo a lo largo del tiempo, según los análisis
+                  guardados en el backend.
+                </p>
+              </header>
+
+              <HistoryView refreshKey={historyRefreshKey} />
+            </>
+          )}
+
+          {section === "reportes" && <ReportsView refreshKey={historyRefreshKey} />}
+        </main>
+      </div>
+    </div>
+  );
+}

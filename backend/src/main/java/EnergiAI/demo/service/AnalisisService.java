@@ -50,25 +50,33 @@ public class AnalisisService {
         PrediccionResponse prediccion = dataScienceClient.obtenerPrediccion(request);
 
         // Creamos una lista modificable con las recomendaciones iniciales
-        List<String> recomendacionesFinales = new ArrayList<>(prediccion.getRecomendaciones());
+        List<String> recomendacionesFinales = prediccion.getRecomendaciones() != null
+                ? new ArrayList<>(prediccion.getRecomendaciones())
+                : new ArrayList<>();
 
-        // 3. Integración con IA: Si no es eficiente, le pedimos un consejo a Gemini
-        if (!"Eficiente".equalsIgnoreCase(prediccion.getCategoria())) {
-            try {
-                String consejoIA = geminiClient.obtenerRecomendacionIA(
-                        prediccion.getCategoria(),
-                        request.getConsumo_kwh(),
-                        request.getCantidad_equipos()
-                );
-                recomendacionesFinales.add(consejoIA);
-            } catch (Exception e) {
+        // 3. Calcular la estimación financiera usando la tarifa del usuario (default 0.75 USD/kWh)
+        double tarifaKwh = request.getTarifa_kwh() != null ? request.getTarifa_kwh() : 0.75;
+        double costo_estimado = request.getConsumo_kwh() * tarifaKwh;
+
+        // 4. Integración con IA: Siempre consultamos a Gemini para recomendaciones y conversión de moneda
+        try {
+            String consejoIA = geminiClient.obtenerRecomendacionIA(
+                    prediccion.getCategoria(),
+                    request.getConsumo_kwh(),
+                    request.getCantidad_equipos(),
+                    costo_estimado
+            );
+            recomendacionesFinales.add(consejoIA);
+        } catch (Exception e) {
+            // Fallback según categoría
+            if ("Eficiente".equalsIgnoreCase(prediccion.getCategoria())) {
+                recomendacionesFinales.add(
+                        "¡Excelente! Mantén tus buenos hábitos de consumo energético.");
+            } else {
                 recomendacionesFinales.add(
                         "Se sugiere revisar los hábitos de consumo energético para mejorar la eficiencia.");
             }
         }
-
-        // 4. Calcular la estimación financiera (Lógica de negocio propia del backend)
-        double costo_estimado = request.getConsumo_kwh() * 0.75;
 
         // 5. Guardar en base de datos (incluye todos los nuevos campos)
         AnalisisEnergetico analisis = AnalisisEnergetico.builder()
@@ -82,6 +90,7 @@ public class AnalisisService {
                 .tieneAireAcondicionado(request.getTiene_aire_acondicionado())
                 .tieneCalentadorElectrico(request.getTiene_calentador_electrico())
                 .electrodomesticosEficientes(request.getElectrodomesticos_eficientes())
+                .tarifaKwh(tarifaKwh)
                 .categoria(prediccion.getCategoria())
                 .probabilidad(prediccion.getProbabilidad())
                 .costoEstimadoMensual(costo_estimado)

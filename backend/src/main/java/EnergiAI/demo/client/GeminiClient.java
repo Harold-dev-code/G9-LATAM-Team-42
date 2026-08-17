@@ -22,11 +22,14 @@ public class GeminiClient {
         this.restClient = RestClient.create();
     }
 
-    public String obtenerRecomendacionIA(String categoria, double consumoKwh, int cantidadDeEquipos){
+    public String obtenerRecomendacionIA(String categoria, double consumoKwh, int cantidadDeEquipos, double costoEstimadoUSD){
         String prompt = "El análisis energético dió la categoría: " + categoria +
                 ". Tiene un consumo de " + consumoKwh + " kWh con " +
-                cantidadDeEquipos + " equipos. " +
-                "Dame 1 recomendación corta, directa y amigable para mejorar la eficiencia.";
+                cantidadDeEquipos + " equipos. El costo estimado mensual es USD " +
+                String.format("%.2f", costoEstimadoUSD) + ". " +
+                "Dame 1 recomendación corta, directa y amigable para mejorar la eficiencia. " +
+                "Además, sugiere brevemente el equivalente aproximado del costo en la moneda local " +
+                "de países latinoamericanos comunes (COP, MXN, DOP, ARS) para que el usuario tenga referencia.";
 
         String requestBody = """
                 {
@@ -54,8 +57,9 @@ public class GeminiClient {
             }
         } catch (Exception e){
             System.err.println("Error al conectar con Gemini: " + e.getMessage());
+            throw new RuntimeException("Gemini no disponible", e);
         }
 
-        return "Te recomendamos revisar tus equipos de mayor consumo"; // Fallback por si falla la IA
+        return "Te recomendamos revisar tus equipos de mayor consumo"; // Fallback si no hay candidates
     }
 }
