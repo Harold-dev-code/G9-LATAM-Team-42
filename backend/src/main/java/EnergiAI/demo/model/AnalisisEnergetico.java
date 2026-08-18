@@ -39,7 +39,8 @@ public class AnalisisEnergetico {
     private Double tarifaKwh;
 
     // Recomendaciones
-    @Column(columnDefinition = "TEXT")
+//    @Column(columnDefinition = "TEXT")
+    @Lob
     private String recomendaciones;
 
     private LocalDateTime fechaCreacion;

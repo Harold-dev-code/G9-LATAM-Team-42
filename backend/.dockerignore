@@ -1,0 +1,27 @@
+# Archivos de Git
+.git
+.gitignore
+
+# Compilados de Maven / Gradle (evita copiar viejas ejecuciones locales)
+target/
+build/
+.mvn/
+mvnw
+mvnw.cmd
+
+# Entornos y secretos locales
+.env
+*.pem
+*.key
+*.p12
+
+# Archivos de configuración de IDEs
+.idea/
+.vscode/
+*.eclipse
+*.classpath
+*.project
+
+# Logs y temporales
+*.log
+tmp/
