@@ -1,0 +1,19 @@
+# Archivos de Git
+.git
+.gitignore
+
+# Módulo de dependencias (se instalan dentro del contenedor)
+node_modules/
+npm-debug.log*
+
+# Compilados de distribución previa
+dist/
+build/
+
+# Entornos locales
+.env.local
+.env.development.local
+
+# Archivos de IDEs
+.idea/
+.vscode/
