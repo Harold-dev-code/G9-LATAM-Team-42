@@ -82,9 +82,38 @@ export default function ResultPanel({ result, error, loading }) {
         <div className="recommendations">
           <span className="eyebrow">Recomendaciones</span>
           <ul>
-            {recomendaciones.filter(Boolean).map((rec, idx) => (
-              <li key={idx}>{rec}</li>
-            ))}
+            {recomendaciones.filter(Boolean).map((rec, idx) => {
+              // Detectar si la recomendación contiene conversiones de moneda (COP, MXN, DOP, ARS)
+              const hasCurrency = /\b(COP|MXN|DOP|ARS)\b/.test(rec);
+              if (hasCurrency) {
+                // Separar la parte de recomendación de la parte de conversión
+                const parts = rec.split(/equivalencia|Equivalencia|moneda local/i);
+                const recText = parts[0]?.replace(/---/g, "").trim();
+                // Extraer monedas con regex
+                const currencyMatches = rec.match(/\*?\s*(COP|MXN|DOP|ARS)[^:]*:\s*~?\$?([^\n*]+)/gi) || [];
+                return (
+                  <li key={idx} className="rec-with-currency">
+                    {recText && <p>{recText}</p>}
+                    {currencyMatches.length > 0 && (
+                      <table className="currency-table">
+                        <thead>
+                          <tr><th>Moneda</th><th>Equivalente aproximado</th></tr>
+                        </thead>
+                        <tbody>
+                          {currencyMatches.map((match, i) => {
+                            const [, label, value] = match.match(/\*?\s*((?:COP|MXN|DOP|ARS)[^:]*?):\s*~?\$?(.+)/i) || [];
+                            return label ? (
+                              <tr key={i}><td>{label.trim()}</td><td>{value?.trim()}</td></tr>
+                            ) : null;
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </li>
+                );
+              }
+              return <li key={idx}>{rec}</li>;
+            })}
           </ul>
         </div>
       )}

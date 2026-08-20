@@ -7,6 +7,8 @@ import ResultPanel from "./components/ResultPanel";
 import HistoryView from "./components/HistoryView";
 import HomeView from "./components/HomeView";
 import ReportsView from "./components/ReportsView";
+import LoginView from "./components/LoginView";
+import RegisterView from "./components/RegisterView";
 import { postAnalisis, ApiError } from "./api/energiaiClient";
 
 function getInitialTheme() {
@@ -19,7 +21,18 @@ function getInitialCollapsed() {
   return window.localStorage.getItem("energiai-sidebar-collapsed") === "true";
 }
 
+function getStoredUser() {
+  try {
+    const stored = window.localStorage.getItem("energiai-user");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
+  const [user, setUser] = useState(getStoredUser);
+  const [authView, setAuthView] = useState("login"); // "login" | "register"
   const [section, setSection] = useState("inicio");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -38,6 +51,18 @@ export default function App() {
     window.localStorage.setItem("energiai-sidebar-collapsed", String(collapsed));
   }, [collapsed]);
 
+  function handleLogin(data) {
+    setUser(data);
+    window.localStorage.setItem("energiai-user", JSON.stringify(data));
+  }
+
+  function handleLogout() {
+    setUser(null);
+    setAuthView("login");
+    window.localStorage.removeItem("energiai-user");
+    setSection("inicio");
+  }
+
   function toggleTheme() {
     setTheme((prev) => (prev === "night" ? "day" : "night"));
   }
@@ -46,7 +71,7 @@ export default function App() {
     setSubmitting(true);
     setError(null);
     try {
-      const response = await postAnalisis(payload);
+      const response = await postAnalisis(payload, user?.userId);
       setResult(response);
       setHistoryRefreshKey((key) => key + 1);
     } catch (err) {
@@ -66,6 +91,25 @@ export default function App() {
     setMobileMenuOpen(false);
   }
 
+  // Si no hay usuario autenticado, mostrar Login/Register
+  if (!user) {
+    return (
+      <div className="auth-wrapper" data-theme={theme}>
+        {authView === "login" ? (
+          <LoginView
+            onLogin={handleLogin}
+            onSwitchToRegister={() => setAuthView("register")}
+          />
+        ) : (
+          <RegisterView
+            onRegister={handleLogin}
+            onSwitchToLogin={() => setAuthView("login")}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={`app-shell ${collapsed ? "sidebar-is-collapsed" : ""}`}>
       <Sidebar
@@ -78,11 +122,20 @@ export default function App() {
       />
 
       <div className="app-content">
-        <TopBar section={section} onNavigate={handleNavigate} theme={theme} onToggleTheme={toggleTheme} onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)} mobileMenuOpen={mobileMenuOpen} />
+        <TopBar
+          section={section}
+          onNavigate={handleNavigate}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
+          mobileMenuOpen={mobileMenuOpen}
+          user={user}
+          onLogout={handleLogout}
+        />
 
         <main className="app-main">
           {section === "inicio" && (
-            <HomeView onNavigate={handleNavigate} refreshKey={historyRefreshKey} />
+            <HomeView onNavigate={handleNavigate} refreshKey={historyRefreshKey} user={user} />
           )}
 
           {section === "analisis" && (
@@ -114,7 +167,7 @@ export default function App() {
                 </p>
               </header>
 
-              <HistoryView refreshKey={historyRefreshKey} />
+              <HistoryView refreshKey={historyRefreshKey} user={user} />
             </>
           )}
 

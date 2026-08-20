@@ -40,7 +40,7 @@ public class AnalisisControllerTest {
         AnalisisRequest request = new AnalisisRequest(300.0, "Casa", 3, 5, 4.0, 0, 10, 0, 0, 0);
         AnalisisResponse responseMock = new AnalisisResponse("Eficiente", 0.75, List.of("Buen trabajo"), 225.0);
 
-        Mockito.when(analisisService.procesarAnalisisEnergetico(Mockito.any(AnalisisRequest.class)))
+        Mockito.when(analisisService.procesarAnalisisEnergetico(Mockito.any(AnalisisRequest.class), Mockito.any()))
                 .thenReturn(responseMock);
 
         mockMvc.perform(post("/analisis-energetico")
