@@ -43,10 +43,13 @@ async function parseErrorBody(response) {
  *   electrodomesticos_eficientes: (0|1)
  * }} payload
  */
-export async function postAnalisis(payload) {
+export async function postAnalisis(payload, userId) {
+  const headers = { "Content-Type": "application/json" };
+  if (userId) headers["X-User-Id"] = String(userId);
+
   const response = await fetch(`${BASE_URL}/analisis-energetico`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
 
@@ -61,9 +64,12 @@ export async function postAnalisis(payload) {
   return response.json();
 }
 
-/** Obtiene el historial completo de análisis guardados. */
-export async function getHistorial() {
-  const response = await fetch(`${BASE_URL}/analisis-energetico/historial`);
+/** Obtiene el historial de análisis del usuario (o todos si no se envía userId). */
+export async function getHistorial(userId) {
+  const headers = {};
+  if (userId) headers["X-User-Id"] = String(userId);
+
+  const response = await fetch(`${BASE_URL}/analisis-energetico/historial`, { headers });
 
   if (!response.ok) {
     const detail = await parseErrorBody(response);

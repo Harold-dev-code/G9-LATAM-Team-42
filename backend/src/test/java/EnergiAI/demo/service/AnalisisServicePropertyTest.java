@@ -37,7 +37,7 @@ class AnalisisServicePropertyTest {
         when(repository.save(any())).thenReturn(null);
 
         AnalisisService service = new AnalisisService(repository, dataScienceClient, geminiClient);
-        service.procesarAnalisisEnergetico(request);
+        service.procesarAnalisisEnergetico(request, null);
 
         ArgumentCaptor<AnalisisRequest> captor = ArgumentCaptor.forClass(AnalisisRequest.class);
         verify(dataScienceClient).obtenerPrediccion(captor.capture());
@@ -68,7 +68,7 @@ class AnalisisServicePropertyTest {
         when(repository.save(any())).thenReturn(null);
 
         AnalisisService service = new AnalisisService(repository, dataScienceClient, geminiClient);
-        AnalisisResponse response = service.procesarAnalisisEnergetico(request);
+        AnalisisResponse response = service.procesarAnalisisEnergetico(request, null);
 
         double expectedCosto = request.getConsumo_kwh() * 0.75;
         assert Math.abs(response.getCosto_estimado() - expectedCosto) < 0.001 :

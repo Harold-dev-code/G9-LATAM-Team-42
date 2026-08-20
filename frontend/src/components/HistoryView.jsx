@@ -35,8 +35,8 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-export default function HistoryView({ refreshKey }) {
-  const { registros, loading, error, refetch } = useHistorial(refreshKey);
+export default function HistoryView({ refreshKey, user }) {
+  const { registros, loading, error, refetch } = useHistorial(refreshKey, user?.userId);
   const [deletingId, setDeletingId] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
 

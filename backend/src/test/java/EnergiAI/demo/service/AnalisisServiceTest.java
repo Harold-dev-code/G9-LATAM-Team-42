@@ -27,7 +27,7 @@ public class AnalisisServiceTest {
         PrediccionResponse mockPrediccion = new PrediccionResponse("Eficiente", 0.30, List.of());
         Mockito.when(dataScienceClient.obtenerPrediccion(Mockito.any())).thenReturn(mockPrediccion);
         
-        AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request);
+        AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request, null);
 
         assertEquals("Eficiente", response.getCategoria());
         assertEquals(112.5, response.getCosto_estimado()); //150 * 0.75
@@ -40,7 +40,7 @@ public class AnalisisServiceTest {
         PrediccionResponse mockPrediccion = new PrediccionResponse("Ineficiente", 0.789, List.of("Recomendacion"));
         Mockito.when(dataScienceClient.obtenerPrediccion(Mockito.any())).thenReturn(mockPrediccion);
 
-        AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request);
+        AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request, null);
 
         assertEquals("Ineficiente", response.getCategoria());
         assertEquals(0.789, response.getProbabilidad());

@@ -7,7 +7,7 @@ const SECTION_LABELS = {
   reportes: "Reportes",
 };
 
-export default function TopBar({ section, onNavigate, theme, onToggleTheme, onToggleMobileMenu, mobileMenuOpen }) {
+export default function TopBar({ section, onNavigate, theme, onToggleTheme, onToggleMobileMenu, mobileMenuOpen, user, onLogout }) {
   return (
     <header className="topbar">
       <div className="topbar-breadcrumb">
@@ -36,6 +36,12 @@ export default function TopBar({ section, onNavigate, theme, onToggleTheme, onTo
           </button>
         )}
         <ThemeToggle theme={theme} onToggle={onToggleTheme} compact />
+        {user && (
+          <div className="topbar-user">
+            <span className="topbar-user-name">{user.nombre}</span>
+            <button type="button" className="btn-logout" onClick={onLogout}>Salir</button>
+          </div>
+        )}
       </div>
     </header>
   );

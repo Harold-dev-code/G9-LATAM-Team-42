@@ -112,8 +112,8 @@ function IconAtom() {
   );
 }
 
-export default function HomeView({ onNavigate, refreshKey }) {
-  const { registros, loading, error } = useHistorial(refreshKey);
+export default function HomeView({ onNavigate, refreshKey, user }) {
+  const { registros, loading, error } = useHistorial(refreshKey, user?.userId);
 
   const stats = useMemo(() => {
     if (registros.length === 0) return null;
@@ -151,8 +151,7 @@ export default function HomeView({ onNavigate, refreshKey }) {
           <p className="hero-subtitle">
             JouleAI toma los datos de tu consumo mensual y los pasa por un modelo de Random
             Forest entrenado en Python: te dice si tu perfil es eficiente, moderado o
-            ineficiente, cuánto vas a pagar aproximadamente (a RD$0,75/kWh) y qué cambiar
-            primero — sin registrarte, sin planillas.
+            ineficiente, cuánto vas a pagar aproximadamente (a RD$0,75/kWh) 
           </p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={() => onNavigate("analisis")}>

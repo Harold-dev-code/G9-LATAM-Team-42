@@ -27,7 +27,7 @@ public class AnalisisService {
         this.geminiClient = geminiClient;
     }
 
-    public AnalisisResponse procesarAnalisisEnergetico(AnalisisRequest request) {
+    public AnalisisResponse procesarAnalisisEnergetico(AnalisisRequest request, Long usuarioId) {
 
         // 1. Asignar defaults a campos opcionales nulos antes de delegar
         if (request.getUso_horario_pico() == null) {
@@ -91,6 +91,7 @@ public class AnalisisService {
                 .tieneCalentadorElectrico(request.getTiene_calentador_electrico())
                 .electrodomesticosEficientes(request.getElectrodomesticos_eficientes())
                 .tarifaKwh(tarifaKwh)
+                .usuarioId(usuarioId)
                 .categoria(prediccion.getCategoria())
                 .probabilidad(prediccion.getProbabilidad())
                 .costoEstimadoMensual(costo_estimado)
@@ -107,7 +108,14 @@ public class AnalisisService {
         );
     }
 
-    public List<AnalisisEnergetico> obtenerHistorial() {
+    public List<AnalisisEnergetico> obtenerHistorial(Long usuarioId) {
+        if (usuarioId != null) {
+            return repository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId);
+        }
         return repository.findAll();
+    }
+
+    public void eliminarAnalisis(Long id) {
+        repository.deleteById(id);
     }
 }

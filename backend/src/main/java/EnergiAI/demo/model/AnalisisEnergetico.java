@@ -38,6 +38,9 @@ public class AnalisisEnergetico {
     private Double costoEstimadoMensual;
     private Double tarifaKwh;
 
+    // Relación con usuario
+    private Long usuarioId;
+
     // Recomendaciones
 //    @Column(columnDefinition = "TEXT")
     @Lob

@@ -5,7 +5,7 @@ import { getHistorial } from "../api/energiaiClient";
 // (Inicio, Historial, Reportes) que necesita los mismos registros.
 // Expone `refetch` para recargar tras eliminar un registro sin depender
 // de un refreshKey global.
-export default function useHistorial(refreshKey) {
+export default function useHistorial(refreshKey, userId) {
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,11 +13,11 @@ export default function useHistorial(refreshKey) {
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
-    return getHistorial()
+    return getHistorial(userId)
       .then((data) => setRegistros(Array.isArray(data) ? data : []))
       .catch((err) => setError(err.message || "No se pudo cargar el historial."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
