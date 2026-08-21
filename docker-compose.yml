@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  servicio-data:
+    build:
+      context: ./datascience/inference_service
+    container_name: python-service
+    restart: always
+    env_file:
+      - .env
+
+  backend-springboot:
+    build:
+      context: ./backend
+    container_name: backend-springboot
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - PYTHON_SERVICE_URL=http://servicio-data:5000/predict
+    depends_on:
+      - servicio-data
+
+
+frontend-app:
+  build:
+    context: ./frontend
+    args:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+  container_name: frontend-app
+  restart: always
+  ports:
+    - "80:80"
+  depends_on:
+    - backend-springboot
+
+networks:
+  default:
+    name: app-energia-network
