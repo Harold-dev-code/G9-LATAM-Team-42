@@ -39,7 +39,7 @@ export default function TopBar({ section, onNavigate, theme, onToggleTheme, onTo
         {user && (
           <div className="topbar-user">
             <span className="topbar-user-name">{user.nombre}</span>
-            <button type="button" className="btn-logout" onClick={onLogout}>Salir</button>
+            <button type="button" className="btn-logout" onClick={() => {localStorage.removeItem("userId");onLogout();}}>Salir</button>
           </div>
         )}
       </div>

@@ -18,3 +18,5 @@ docs/historial.md
 # jqwik test database
 backend/.jqwik-database
 .jqwik-database
+
+.env

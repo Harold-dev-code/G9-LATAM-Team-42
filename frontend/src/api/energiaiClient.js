@@ -67,7 +67,31 @@ export async function postAnalisis(payload, userId) {
 /** Obtiene el historial de análisis del usuario (o todos si no se envía userId). */
 export async function getHistorial(userId) {
   const headers = {};
-  if (userId) headers["X-User-Id"] = String(userId);
+
+  let activeUserId = userId;
+
+  if (!activeUserId) {
+    const sessionData = localStorage.getItem("energiai-user");
+    if (sessionData) {
+      try {
+        const userObj = JSON.parse(sessionData);
+        activeUserId = userObj.userId || userObj.id;
+      } catch (e) {
+        console.error("Error al parsear energiai-user:", e);
+      }
+    }
+  }
+
+  if (!activeUserId) {
+      activeUserId = localStorage.getItem("userId");
+    }
+
+  if (activeUserId !== "undefined") {
+      headers["X-User-Id"] = String(activeUserId);
+    } else {
+      console.error("getHistorial: No se encontró un userId válido para la petición.");
+    }
+
 
   const response = await fetch(`${BASE_URL}/analisis-energetico/historial`, { headers });
 

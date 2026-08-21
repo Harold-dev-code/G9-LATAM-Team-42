@@ -56,7 +56,10 @@ function toCsv(registros) {
 }
 
 export default function ReportsView({ refreshKey }) {
-  const { registros, loading, error } = useHistorial(refreshKey);
+
+  const userId = localStorage.getItem("userId");
+  const { registros, loading, error } = useHistorial(refreshKey, userId);
+
   const [periodo, setPeriodo] = useState("mes");
   const [exporting, setExporting] = useState(false);
   const reportRef = useRef(null);
