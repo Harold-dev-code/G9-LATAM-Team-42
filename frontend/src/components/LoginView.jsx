@@ -29,6 +29,11 @@ export default function LoginView({ onLogin, onSwitchToRegister }) {
       }
 
       const data = await response.json();
+
+      if (data.userId) {
+        localStorage.setItem("userId", data.userId);
+      }
+
       onLogin(data);
     } catch (err) {
       setError(err.message);

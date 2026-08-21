@@ -10,6 +10,7 @@ import EnergiAI.demo.repository.AnalisisEnergeticoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -109,10 +110,10 @@ public class AnalisisService {
     }
 
     public List<AnalisisEnergetico> obtenerHistorial(Long usuarioId) {
-        if (usuarioId != null) {
-            return repository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId);
+        if (usuarioId == null) {
+            return Collections.emptyList();
         }
-        return repository.findAll();
+        return repository.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId);
     }
 
     public void eliminarAnalisis(Long id) {
