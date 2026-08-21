@@ -341,6 +341,14 @@ export default function HomeView({ onNavigate, refreshKey, user }) {
                 <span className="home-stat-label">Costo estimado acumulado</span>
                 <span className="home-stat-value mono">{currency.format(stats.totalCosto)}</span>
               </div>
+              <div className="home-stat-card">
+                <span className="home-stat-label">Confianza del modelo</span>
+                <span className="home-stat-value mono">
+                  {typeof stats.last.probabilidad === "number"
+                    ? `${(stats.last.probabilidad * 100).toFixed(1)}%`
+                    : "No disponible"}
+                </span>
+              </div>
               <div className="home-stat-card home-stat-card--distribution">
                 <span className="home-stat-label">Distribución</span>
                 <div className="home-distribution">

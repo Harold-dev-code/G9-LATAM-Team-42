@@ -40,6 +40,8 @@ export default function ResultPanel({ result, error, loading }) {
   }
 
   const { categoria, probabilidad, recomendaciones, costo_estimado } = result;
+  const confianzaModelo =
+    typeof probabilidad === "number" ? `${(probabilidad * 100).toFixed(1)}%` : "No disponible";
 
   // Convert (categoria, probabilidad) into a 0-100 gauge score.
   // Gauge: 0=green/efficient (left), 100=red/inefficient (right).
@@ -70,6 +72,10 @@ export default function ResultPanel({ result, error, loading }) {
         <div className="result-stat result-stat--inline">
           <span className="result-stat-label">Costo estimado mensual</span>
           <span className="result-stat-value mono">{currency.format(costo_estimado ?? 0)}</span>
+        </div>
+        <div className="result-stat result-stat--inline">
+          <span className="result-stat-label">Confianza del modelo</span>
+          <span className="result-stat-value mono">{confianzaModelo}</span>
         </div>
       </div>
 
