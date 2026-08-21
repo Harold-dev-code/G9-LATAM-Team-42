@@ -32,6 +32,7 @@ export default function LoginView({ onLogin, onSwitchToRegister }) {
 
       if (data.userId) {
         localStorage.setItem("userId", data.userId);
+        localStorage.setItem("userName", data.nombre || "");
       }
 
       onLogin(data);

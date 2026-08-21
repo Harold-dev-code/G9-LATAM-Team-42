@@ -84,27 +84,32 @@ export default function ResultPanel({ result, error, loading }) {
           <ul>
             {recomendaciones.filter(Boolean).map((rec, idx) => {
               // Detectar si la recomendación contiene conversiones de moneda (COP, MXN, DOP, ARS)
-              const hasCurrency = /\b(COP|MXN|DOP|ARS)\b/.test(rec);
-              if (hasCurrency) {
-                // Separar la parte de recomendación de la parte de conversión
-                const parts = rec.split(/equivalencia|Equivalencia|moneda local/i);
-                const recText = parts[0]?.replace(/---/g, "").trim();
-                // Extraer monedas con regex
-                const currencyMatches = rec.match(/\*?\s*(COP|MXN|DOP|ARS)[^:]*:\s*~?\$?([^\n*]+)/gi) || [];
+              const hasConversion = /CONVERSION:/i.test(rec);
+              if (hasConversion) {
+                const [recPart, convPart] = rec.split(/CONVERSION:/i);
+                const recText = recPart?.replace(/RECOMENDACION:/i, "").replace(/\*\*/g, "").trim();
+                const convLines = (convPart || "").split(/\n/).filter(l => l.trim().length > 0);
                 return (
                   <li key={idx} className="rec-with-currency">
                     {recText && <p>{recText}</p>}
-                    {currencyMatches.length > 0 && (
+                    {convLines.length > 0 && (
                       <table className="currency-table">
                         <thead>
-                          <tr><th>Moneda</th><th>Equivalente aproximado</th></tr>
+                          <tr><th>País / Moneda</th><th>Equivalente aproximado</th></tr>
                         </thead>
                         <tbody>
-                          {currencyMatches.map((match, i) => {
-                            const [, label, value] = match.match(/\*?\s*((?:COP|MXN|DOP|ARS)[^:]*?):\s*~?\$?(.+)/i) || [];
-                            return label ? (
-                              <tr key={i}><td>{label.trim()}</td><td>{value?.trim()}</td></tr>
-                            ) : null;
+                          {convLines.map((line, i) => {
+                            const cleaned = line.replace(/^\*\s*/, "").trim();
+                            const colonIdx = cleaned.lastIndexOf(":");
+                            if (colonIdx > 0) {
+                              return (
+                                <tr key={i}>
+                                  <td>{cleaned.substring(0, colonIdx).trim()}</td>
+                                  <td>{cleaned.substring(colonIdx + 1).trim()}</td>
+                                </tr>
+                              );
+                            }
+                            return <tr key={i}><td colSpan={2}>{cleaned}</td></tr>;
                           })}
                         </tbody>
                       </table>
@@ -112,7 +117,40 @@ export default function ResultPanel({ result, error, loading }) {
                   </li>
                 );
               }
-              return <li key={idx}>{rec}</li>;
+              const hasCurrency = /\b(COP|MXN|DOP|ARS|BRL|CLP|PEN|UYU|PYG|HNL|VES)\b/i.test(rec);
+              if (hasCurrency) {
+                const lines = rec.split(/\n/).filter(l => l.trim());
+                const recLines = lines.filter(l => !/\b(COP|MXN|DOP|ARS|BRL|CLP|PEN|UYU|PYG|HNL|VES)\b/i.test(l));
+                const currencyLines = lines.filter(l => /\b(COP|MXN|DOP|ARS|BRL|CLP|PEN|UYU|PYG|HNL|VES)\b/i.test(l));
+                return (
+                  <li key={idx} className="rec-with-currency">
+                    {recLines.length > 0 && <p>{recLines.join(" ").replace(/\*\*/g, "").trim()}</p>}
+                    {currencyLines.length > 0 && (
+                      <table className="currency-table">
+                        <thead>
+                          <tr><th>País / Moneda</th><th>Equivalente aproximado</th></tr>
+                        </thead>
+                        <tbody>
+                          {currencyLines.map((line, i) => {
+                            const cleaned = line.replace(/^\*\s*/, "").trim();
+                            const colonIdx = cleaned.lastIndexOf(":");
+                            if (colonIdx > 0) {
+                              return (
+                                <tr key={i}>
+                                  <td>{cleaned.substring(0, colonIdx).trim()}</td>
+                                  <td>{cleaned.substring(colonIdx + 1).trim()}</td>
+                                </tr>
+                              );
+                            }
+                            return <tr key={i}><td colSpan={2}>{cleaned}</td></tr>;
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </li>
+                );
+              }
+              return <li key={idx}>{rec.replace(/\*\*/g, "")}</li>;
             })}
           </ul>
         </div>

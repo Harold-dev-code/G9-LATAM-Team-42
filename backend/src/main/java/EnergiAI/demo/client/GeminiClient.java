@@ -23,13 +23,32 @@ public class GeminiClient {
     }
 
     public String obtenerRecomendacionIA(String categoria, double consumoKwh, int cantidadDeEquipos, double costoEstimadoUSD){
-        String prompt = "El análisis energético dió la categoría: " + categoria +
+        String prompt = "Actúa como un experto en eficiencia energética. " +
+                "El análisis energético dio la categoría: " + categoria +
                 ". Tiene un consumo de " + consumoKwh + " kWh con " +
                 cantidadDeEquipos + " equipos. El costo estimado mensual es USD " +
                 String.format("%.2f", costoEstimadoUSD) + ". " +
-                "Dame 1 recomendación corta, directa y amigable para mejorar la eficiencia. " +
-                "Además, sugiere brevemente el equivalente aproximado del costo en la moneda local " +
-                "de países latinoamericanos comunes (COP, MXN, DOP, ARS) para que el usuario tenga referencia.";
+                "Responde EXACTAMENTE respetando estas dos secciones separadas por saltos de línea, sin alterar los nombres de las etiquetas:\n\n" +
+                "RECOMENDACION: ¡Hola! [Escribe aquí tu recomendación corta y amigable, por ejemplo comentando sobre los equipos y formas de ahorro]\n\n" +
+                "CONVERSION:\n" +
+                "🇦🇷 Argentina (ARS): [valor aproximado]\n" +
+                "🇧🇴 Bolivia (BOB): [valor aproximado]\n" +
+                "🇧🇷 Brasil (BRL): [valor aproximado]\n" +
+                "🇨🇱 Chile (CLP): [valor aproximado]\n" +
+                "🇨🇴 Colombia (COP): [valor aproximado]\n" +
+                "🇨🇷 Costa Rica (CRC): [valor aproximado]\n" +
+                "🇨🇺 Cuba (CUP): [valor aproximado]\n" +
+                "🇬🇹 Guatemala (GTQ): [valor aproximado]\n" +
+                "🇭🇹 Haití (HTG): [valor aproximado]\n" +
+                "🇭🇳 Honduras (HNL): [valor aproximado]\n" +
+                "🇲🇽 México (MXN): [valor aproximado]\n" +
+                "🇳🇮 Nicaragua (NIO): [valor aproximado]\n" +
+                "🇵🇾 Paraguay (PYG): [valor aproximado]\n" +
+                "🇵🇪 Perú (PEN): [valor aproximado]\n" +
+                "🇩🇴 República Dominicana (DOP): [valor aproximado]\n" +
+                "🇺🇾 Uruguay (UYU): [valor aproximado]\n" +
+                "🇻🇪 Venezuela (VES): [valor aproximado]\n\n" +
+                "Asegúrate de conservar la etiqueta RECOMENDACION: al inicio y el bloque CONVERSION: tal cual se indicó.";
 
         String requestBody = """
                 {

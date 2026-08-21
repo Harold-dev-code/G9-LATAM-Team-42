@@ -1677,3 +1677,132 @@
   border-color: var(--coral);
   color: var(--coral);
 }
+
+/* ── Report PDF styles ──────────────────────────────────────── */
+.report-pdf-header {
+  border-bottom: 2px solid var(--amber);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.report-pdf-title {
+  color: var(--text);
+}
+
+.report-pdf-meta {
+  color: var(--text-muted);
+}
+
+.report-chart-title {
+  color: var(--text);
+}
+
+.report-pdf-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.report-pdf-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 1;
+}
+
+.report-pdf-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.report-chart-section {
+  margin: 24px 0;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+}
+
+.report-chart-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+
+.report-pdf-footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.report-pdf-footer p {
+  margin: 0;
+}
+
+/* Colores forzados para exportación a PDF (fondo blanco) */
+.report-printing {
+  color: #1e293b !important;
+  background: #ffffff !important;
+}
+
+.report-printing .report-pdf-title {
+  color: #1e293b !important;
+}
+
+.report-printing .report-pdf-meta,
+.report-printing .report-pdf-meta span {
+  color: #475569 !important;
+}
+
+.report-printing .home-stat-label {
+  color: #475569 !important;
+}
+
+.report-printing .home-stat-value {
+  color: #1e293b !important;
+}
+
+.report-printing .report-chart-title {
+  color: #1e293b !important;
+}
+
+.report-printing .report-summary-card {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.report-printing .report-chart-section {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+.report-printing .history-table th {
+  color: #475569 !important;
+  background: #f1f5f9 !important;
+}
+
+.report-printing .history-table td {
+  color: #1e293b !important;
+  background: #ffffff !important;
+}
+
+.report-printing .history-table-wrap {
+  background: #ffffff !important;
+}
+
+.report-printing .history-table {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.report-printing .report-pdf-footer p {
+  color: #94a3b8 !important;
+}
