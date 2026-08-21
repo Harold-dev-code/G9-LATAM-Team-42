@@ -217,10 +217,10 @@ export default function HomeView({ onNavigate, refreshKey, user }) {
           <div className="how-step">
             <span className="how-step-number mono">03</span>
             <div className="how-step-icon"><IconReport /></div>
-            <h3>Recibe tu diagnóstico</h3>
+            <h3>Recibe tu diagnóstico + IA</h3>
             <p className="text-muted">
-              Costo estimado mensual, recomendaciones puntuales, y todo queda guardado en tu
-              historial para comparar con el próximo mes.
+              Costo estimado mensual, recomendación personalizada generada por IA (Gemini),
+              conversión a monedas de LATAM, y todo queda guardado en tu historial.
             </p>
           </div>
         </div>
@@ -231,8 +231,8 @@ export default function HomeView({ onNavigate, refreshKey, user }) {
         <span className="eyebrow">Arquitectura técnica</span>
         <h2>Detrás de la interfaz</h2>
         <p className="text-muted" style={{ maxWidth: 560 }}>
-          JouleAI combina ciencia de datos con una API REST en producción sobre OCI —
-          este proyecto nació como parte del hackathon G9 LATAM Team 42.
+          JouleAI integra un modelo ML, una API de inferencia Flask, IA generativa (Gemini) y despliegue en Oracle Cloud —
+          proyecto del hackathon G9 LATAM Team 42.
         </p>
 
         <div className="tech-grid">
@@ -241,7 +241,15 @@ export default function HomeView({ onNavigate, refreshKey, user }) {
             <span className="tech-card-icon"><IconChip /></span>
             <div>
               <span className="tech-card-title">Python + Scikit-learn</span>
-              <span className="tech-card-subtitle">Modelo de clasificación (Random Forest)</span>
+              <span className="tech-card-subtitle">Modelo Árbol de Decisión (clasificación energética)</span>
+            </div>
+          </div>
+          <div className="tech-card">
+            <span className="tech-card-shine" aria-hidden="true" />
+            <span className="tech-card-icon"><IconApi /></span>
+            <div>
+              <span className="tech-card-title">Flask API (Inferencia ML)</span>
+              <span className="tech-card-subtitle">Microservicio Python — /predict y /health</span>
             </div>
           </div>
           <div className="tech-card">
@@ -249,7 +257,15 @@ export default function HomeView({ onNavigate, refreshKey, user }) {
             <span className="tech-card-icon"><IconApi /></span>
             <div>
               <span className="tech-card-title">Java + Spring Boot</span>
-              <span className="tech-card-subtitle">API REST — /analisis-energetico</span>
+              <span className="tech-card-subtitle">API REST — /analisis-energetico + /auth</span>
+            </div>
+          </div>
+          <div className="tech-card">
+            <span className="tech-card-shine" aria-hidden="true" />
+            <span className="tech-card-icon"><IconModel /></span>
+            <div>
+              <span className="tech-card-title">Google Gemini (IA)</span>
+              <span className="tech-card-subtitle">Recomendaciones + conversión de moneda LATAM</span>
             </div>
           </div>
           <div className="tech-card">
@@ -265,7 +281,7 @@ export default function HomeView({ onNavigate, refreshKey, user }) {
             <span className="tech-card-icon"><IconAtom /></span>
             <div>
               <span className="tech-card-title">React + Vite</span>
-              <span className="tech-card-subtitle">Interfaz — el panel que estás usando</span>
+              <span className="tech-card-subtitle">Interfaz SPA — el panel que estás usando</span>
             </div>
           </div>
         </div>

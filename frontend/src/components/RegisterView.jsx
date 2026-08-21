@@ -30,6 +30,10 @@ export default function RegisterView({ onRegister, onSwitchToLogin }) {
       }
 
       const data = await response.json();
+      if (data.userId) {
+        localStorage.setItem("userId", data.userId);
+        localStorage.setItem("userName", data.nombre || "");
+      }
       onRegister(data);
     } catch (err) {
       setError(err.message);

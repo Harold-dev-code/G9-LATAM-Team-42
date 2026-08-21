@@ -6,37 +6,41 @@ El proyecto es desarrollado como parte de la simulación laboral de **No Country
 
 ---
 
-## ¿Qué hace JouleAI? (Alcance del MVP)
-Cuando un usuario envía sus datos de consumo, el sistema procesa la información y devuelve en segundos:
+## ¿Qué hace JouleAI?
+Cuando un usuario se registra y envía sus datos de consumo, el sistema procesa la información y devuelve en segundos:
 1. **Clasificación de Perfil:** Determina si el consumo es *Eficiente*, *Moderado* o *Ineficiente* usando un modelo de Machine Learning (Árbol de Decisión).
 2. **Recomendaciones de Ahorro:** Entrega consejos prácticos y personalizados generados por IA (Gemini), adaptados al nivel de eficiencia.
 3. **Costo Estimado:** Calcula una proyección del valor de la factura mensual basado en la tarifa configurable por el usuario (default $0.75 USD por kWh).
-4. **Conversión de Moneda:** Gemini sugiere equivalentes del costo en monedas LATAM (COP, MXN, DOP, ARS).
-5. **Historial:** El usuario puede consultar y eliminar análisis anteriores, con gráficos de evolución del consumo.
+4. **Conversión de Moneda:** Gemini sugiere equivalentes del costo en 13 monedas de LATAM (ARS, BRL, CLP, COP, DOP, HNL, MXN, PEN, PYG, UYU, VES + USD).
+5. **Historial Personal:** Cada usuario ve solo sus análisis, con gráficos de evolución del consumo.
+6. **Reportes PDF:** Descarga reportes personalizados con nombre del usuario, gráficas de consumo, y resumen estadístico.
 
 ---
 
 ## Arquitectura y Flujo Técnico
-El sistema está diseñado bajo una **arquitectura de microservicios**:
 
 ```
-Frontend (React 19 + Vite 8, puerto 5173)
-    ↓ POST /analisis-energetico
-Backend (Java 21 + Spring Boot 4.1, puerto 8080)
+Frontend (React 19 + Vite 8)
+    ↓ POST /auth/register | /auth/login
+    ↓ POST /analisis-energetico (+ header X-User-Id)
+Backend (Java 21 + Spring Boot 4.1)
     ↓ POST /predict
-Servicio Flask (Python 3.12, scikit-learn, puerto 5000)
-    → Modelo Árbol de Decisión (pipeline .pkl)
+Servicio Flask (Python 3.12 + scikit-learn)
+    → Modelo Árbol de Decisión (15 features, pipeline .pkl)
 Backend ← Flask (categoria + probabilidad)
-    ↓ Gemini API (recomendaciones + conversión moneda)
+    ↓ Gemini API (recomendación + conversión de moneda LATAM)
 Backend → Frontend (categoria + probabilidad + recomendaciones + costo)
+    → Oracle Cloud DB (persistencia)
 ```
 
 ### Componentes:
-1. **Frontend (React 19 + Vite 8):** SPA con formulario de 11 campos, gauge animado, panel de resultados, historial con gráficos (Recharts), tema dark/light, sidebar responsive.
-2. **Backend (Java 21 + Spring Boot 4.1):** API Gateway que valida entrada, delega predicción a Flask, consulta Gemini para recomendaciones, calcula costos y persiste en BD.
-3. **Data Science (Python 3.12 + Flask):** Microservicio que carga el modelo ML (.pkl), calcula features derivados y ejecuta predicción.
-4. **IA Generativa (Gemini 3.5 Flash):** Genera recomendaciones personalizadas y sugerencias de conversión de moneda.
-5. **Base de Datos:** H2 en memoria (dev) / Oracle Autonomous DB (prod).
+| Servicio | Tecnología | Puerto | Descripción |
+|----------|-----------|--------|-------------|
+| Frontend | React 19 + Vite 8 | 5173 (dev) / 80 (prod) | SPA con auth, formulario 11 campos, gauge, reportes PDF |
+| Backend | Java 21 + Spring Boot 4.1 | 8080 | API REST, auth BCrypt, integración Flask + Gemini |
+| Flask ML | Python 3.12 + scikit-learn | 5000 | Microservicio de inferencia con modelo .pkl |
+| Gemini | Google AI (Gemini 3.5 Flash) | — | Recomendaciones + conversión de moneda |
+| Base de datos | H2 (dev) / Oracle Autonomous (prod) | — | Persistencia de usuarios y análisis |
 
 ---
 
@@ -46,8 +50,74 @@ Backend → Frontend (categoria + probabilidad + recomendaciones + costo)
 - Java 21, Maven
 - Python 3.12, pip
 - Node.js 20+
+- (Opcional) Docker + Docker Compose
 
-### 1. Servicio Flask (ML)
+### Opción A: Servicios individuales (3 terminales)
+
+**Terminal 1 — Flask ML:**
+```bash
+cd datascience/inference_service
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+**Terminal 2 — Backend:**
+```bash
+cd backend
+chmod +x mvnw
+GEMINI_API_KEY=tu-key SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+```
+
+**Terminal 3 — Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Abrir `http://localhost:5173`
+
+### Opción B: Docker Compose (un comando)
+```bash
+cp .env.example .env
+# Editar .env con tu GEMINI_API_KEY
+docker compose up --build
+```
+
+Abrir `http://localhost:3000`
+
+---
+
+## Tests
+
+| Capa | Framework | Comando | Tests |
+|------|-----------|---------|-------|
+| Frontend | Vitest + fast-check | `cd frontend && npm test` | 11 (unit + PBT) |
+| Backend | JUnit 5 + jqwik | `cd backend && ./mvnw test` | 20 (unit + PBT) |
+| Flask | pytest + Hypothesis | `cd datascience/inference_service && pytest` | 91 (unit + PBT) |
+
+---
+
+## Estructura del monorepo
+
+```
+G9-LATAM-Team-42/
+├── frontend/                → React 19 + Vite 8 (SPA con auth)
+├── backend/                 → Spring Boot 4.1 (API + auth + Gemini)
+├── datascience/             → Modelo ML + Servicio Flask
+│   ├── inference_service/   → Flask API de predicción
+│   └── modelo_arbol_decision_pipeline.pkl
+├── docs/                    → Contrato API + historial de desarrollo
+├── docker-compose.yml       → Orquestación de servicios
+├── .env.example             → Template de variables de entorno
+└── README.md
+```
+
+---
+
+## Equipo
+**G9 LATAM Team 42** — Simulación laboral No Country (2026)
 ```bash
 cd datascience/inference_service
 python -m venv .venv && source .venv/bin/activate

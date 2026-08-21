@@ -87,7 +87,7 @@ export default function AnalysisForm({ onSubmit, submitting }) {
 
       <div className="form-row">
         <div className="form-field">
-          <label htmlFor="personas_vivienda">Personas en la vivienda</label>
+          <label htmlFor="personas_vivienda">Personas dentro del Inmueble</label>
           <input
             id="personas_vivienda"
             type="number"

@@ -1,6 +1,16 @@
 import { useMemo, useRef, useState } from "react";
 import useHistorial from "../hooks/useHistorial";
 import StatusBadge from "./StatusBadge";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 const currency = new Intl.NumberFormat("es-DO", {
   style: "currency",
@@ -98,6 +108,8 @@ export default function ReportsView({ refreshKey }) {
       return;
     }
     setExporting(true);
+    // Agregar clase para forzar colores de impresión
+    reportRef.current.classList.add("report-printing");
     window
       .html2pdf()
       .from(reportRef.current)
@@ -109,7 +121,10 @@ export default function ReportsView({ refreshKey }) {
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       })
       .save()
-      .finally(() => setExporting(false));
+      .finally(() => {
+        reportRef.current.classList.remove("report-printing");
+        setExporting(false);
+      });
   }
 
   return (
@@ -171,9 +186,23 @@ export default function ReportsView({ refreshKey }) {
 
       {!loading && !error && resumen && (
         <div className="report-printable" ref={reportRef}>
+          {/* Header personalizado para el PDF */}
+          <div className="report-pdf-header">
+            <div className="report-pdf-brand">
+              <span className="brand-mark" aria-hidden="true">⚡</span>
+              <span className="report-pdf-title">JouleAI — Reporte de Consumo Energético</span>
+            </div>
+            <div className="report-pdf-meta">
+              <span><strong>Usuario:</strong> {localStorage.getItem("userName") || "Usuario"}</span>
+              <span><strong>Período:</strong> {PERIODOS.find(p => p.value === periodo)?.label}</span>
+              <span><strong>Generado:</strong> {new Date().toLocaleDateString("es-DO", { day: "2-digit", month: "long", year: "numeric" })}</span>
+            </div>
+          </div>
+
+          {/* Resumen visual mejorado */}
           <div className="report-summary-cards">
             <div className="report-summary-card">
-              <span className="home-stat-label">Análisis en el período</span>
+              <span className="home-stat-label">Total de análisis</span>
               <span className="home-stat-value mono">{resumen.count}</span>
             </div>
             <div className="report-summary-card">
@@ -181,16 +210,55 @@ export default function ReportsView({ refreshKey }) {
               <span className="home-stat-value mono">{resumen.totalConsumo.toFixed(1)} kWh</span>
             </div>
             <div className="report-summary-card">
+              <span className="home-stat-label">Promedio por análisis</span>
+              <span className="home-stat-value mono">{(resumen.totalConsumo / resumen.count).toFixed(1)} kWh</span>
+            </div>
+            <div className="report-summary-card">
               <span className="home-stat-label">Costo estimado total</span>
               <span className="home-stat-value mono">{currency.format(resumen.totalCosto)}</span>
             </div>
             <div className="report-summary-card">
-              <span className="home-stat-label">Categoría más frecuente</span>
+              <span className="home-stat-label">Costo promedio</span>
+              <span className="home-stat-value mono">{currency.format(resumen.totalCosto / resumen.count)}</span>
+            </div>
+            <div className="report-summary-card">
+              <span className="home-stat-label">Categoría predominante</span>
               <StatusBadge categoria={resumen.categoriaPrincipal} size="sm" />
             </div>
           </div>
 
+          {/* Gráfica de consumo */}
+          {filtrados.length > 1 && (
+            <div className="report-chart-section">
+              <h3 className="report-chart-title">Evolución del consumo</h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={[...filtrados]
+                    .sort((a, b) => new Date(a.fechaCreacion) - new Date(b.fechaCreacion))
+                    .map((r) => ({
+                      fecha: r.fechaCreacion
+                        ? new Date(r.fechaCreacion).toLocaleDateString("es-DO", { day: "2-digit", month: "short" })
+                        : "—",
+                      consumo: r.consumoKwh || 0,
+                      costo: r.costoEstimadoMensual || 0,
+                    }))}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-soft)" />
+                  <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="consumo" name="Consumo (kWh)" fill="var(--amber)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="costo" name="Costo (USD)" fill="var(--mint)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Tabla de detalle */}
           <div className="history-table-wrap">
+            <h3 className="report-chart-title">Detalle de análisis</h3>
             <table className="history-table">
               <thead>
                 <tr>
@@ -219,6 +287,11 @@ export default function ReportsView({ refreshKey }) {
                   ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Footer del PDF */}
+          <div className="report-pdf-footer">
+            <p>JouleAI © {new Date().getFullYear()} — G9 LATAM Team 42 | Reporte generado automáticamente</p>
           </div>
         </div>
       )}
