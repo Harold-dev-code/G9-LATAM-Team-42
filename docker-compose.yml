@@ -20,21 +20,21 @@ services:
       - .env
     environment:
       - PYTHON_SERVICE_URL=http://servicio-data:5000/predict
+      - PUBLIC_IP=${PUBLIC_IP}
     depends_on:
       - servicio-data
 
-
-frontend-app:
-  build:
-    context: ./frontend
-    args:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
-  container_name: frontend-app
-  restart: always
-  ports:
-    - "80:80"
-  depends_on:
-    - backend-springboot
+  frontend-app:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    container_name: frontend-app
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-springboot
 
 networks:
   default:
