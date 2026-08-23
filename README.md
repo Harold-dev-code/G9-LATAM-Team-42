@@ -1,5 +1,16 @@
-# JouleAI ⚡
-
+# JouleAI ⚡ [![Demo en Vivo](https://img.shields.io/badge/DEMO-EN%20VIVO-brightgreen?style=for-the-badge&logo=googlechrome&logoColor=white)](http://129.80.145.212)
+<!-- ===== BADGES (pegar justo debajo del título) ===== -->
+[![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
+[![Gemini](https://img.shields.io/badge/Gemini-3.5%20Flash-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![OCI](https://img.shields.io/badge/Oracle%20Cloud-Infrastructure-F80000?style=for-the-badge&logo=oracle&logoColor=white)](https://www.oracle.com/cloud/)
+[![License](https://img.shields.io/badge/status-hackathon-lightgrey?style=for-the-badge)]()
+<!-- ==================================================== -->
 JouleAI es un **asesor energético automático** diseñado para hogares y pequeños negocios. A través de inteligencia artificial, analiza el perfil de consumo eléctrico de los usuarios para clasificar su eficiencia, estimar su gasto mensual y ofrecer recomendaciones personalizadas y accionables de ahorro.
 ## Objetivos del Proyecto
 * *Optimización del Consumo:* Proveer a los usuarios una herramienta digital accesible para auditar y comprender su gasto eléctrico mensual.
@@ -46,7 +57,35 @@ Backend → Frontend (categoria + probabilidad + recomendaciones + costo)
 | Base de datos | H2 (dev) / Oracle Autonomous (prod) | — | Persistencia de usuarios y análisis |
 
 ---
+## Infraestructura y Despliegue (OCI)
 
+JouleAI está desplegado en **Oracle Cloud Infrastructure (OCI)** usando una instancia de cómputo Ubuntu que orquesta los tres servicios (Frontend, Backend, Data Science) vía **Docker Compose**, con persistencia en una **Autonomous Database** protegida por ACL + TLS.
+
+🔗 **Demo en vivo:** [http://129.80.145.212](http://129.80.145.212)
+
+```text
+[Cliente / Internet]
+        │  IP pública: 129.80.145.212
+┌───────▼─────────────────────────────────┐
+│ OCI Compute Instance (Ubuntu + Docker)   │
+│ ├─ frontend-app (Nginx)      → :80       │
+│ ├─ backend-springboot (Java) → :8080     │
+│ └─ python-service (ML)       → :5000     │
+└───────▼─────────────────────────────────┘
+        │  TLS cifrado, solo IP autorizada (ACL)
+┌───────▼─────────────────────────────────┐
+│ OCI Autonomous Database                  │
+└───────────────────────────────────────────┘
+```
+
+| Componente | Detalle |
+|---|---|
+| Cómputo | Instancia Ubuntu, Docker Compose multi-contenedor, `restart: always` |
+| Base de datos | Autonomous DB (tablas `USUARIO`, `ANALISIS_ENERGETICO`), acceso restringido por ACL a la IP del servidor |
+| Red | VCN + Security List, puertos `80` (Frontend) y `8080` (Backend) expuestos |
+| Secretos | Variables sensibles (`GEMINI_API_KEY`, credenciales DB) aisladas en `.env`, fuera del control de versiones |
+
+📄 Documentación técnica completa (comandos de despliegue, mantenimiento, diagrama detallado): **[docs/OCI.md](./docs/OCI.md)**
 ## Cómo ejecutar localmente
 
 ### Prerrequisitos
