@@ -1,7 +1,10 @@
 # JouleAI ⚡
 
 JouleAI es un **asesor energético automático** diseñado para hogares y pequeños negocios. A través de inteligencia artificial, analiza el perfil de consumo eléctrico de los usuarios para clasificar su eficiencia, estimar su gasto mensual y ofrecer recomendaciones personalizadas y accionables de ahorro.
-
+## Objetivos del Proyecto
+* *Optimización del Consumo:* Proveer a los usuarios una herramienta digital accesible para auditar y comprender su gasto eléctrico mensual.
+* *Automatización con Inteligencia Artificial:* Integrar un modelo de machine learning capaz de clasificar de manera automática el perfil de consumo (Eficiente, Moderado, Ineficiente).
+* *Experiencia de Usuario Fluida:* Desarrollar una interfaz moderna, interactiva y responsiva con visualización de datos en tiempo real.
 El proyecto es desarrollado como parte de la simulación laboral de **No Country** por el equipo **G9-LATAM-Team-42**.
 
 ---
