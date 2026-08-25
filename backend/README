@@ -1,0 +1,486 @@
+# EnergIA — Backend
+
+Backend del proyecto **EnergIA**, desarrollado para la **Hackathon ONE**.
+
+Esta API REST, construida con **Java 21** y **Spring Boot 3.x**, funciona como el núcleo de la solución para el análisis de patrones de consumo de energía eléctrica.
+
+Su objetivo principal es:
+
+- Recibir datos de consumo energético de viviendas o establecimientos.
+- Procesar la información mediante un modelo predictivo o un motor de reglas.
+- Clasificar el nivel de eficiencia energética.
+- Generar recomendaciones de optimización.
+- Estimar el costo del consumo energético.
+
+---
+
+## Tabla de contenidos
+
+- [Stack tecnológico](#stack-tecnológico)
+- [Requisitos previos](#requisitos-previos)
+- [Configuración local](#configuración-local)
+- [Configuración para producción](#configuración-para-producción)
+- [Documentación Swagger](#documentación-swagger)
+- [Endpoints de la API](#endpoints-de-la-api)
+  - [Procesar análisis energético](#1-procesar-análisis-energético)
+  - [Obtener historial de análisis](#2-obtener-historial-de-análisis)
+- [Lógica de negocio](#lógica-de-negocio)
+- [Cálculo del score](#cálculo-del-score)
+- [Clasificación de resultados](#clasificación-de-resultados)
+- [Base de datos](#base-de-datos)
+- [Migraciones con Flyway](#migraciones-con-flyway)
+
+---
+
+## Stack tecnológico
+
+| Tecnología | Uso |
+|---|---|
+| **Java 21** | Lenguaje principal |
+| **Spring Boot 3.x** | Framework backend |
+| **Spring Data JPA** | Persistencia de datos |
+| **H2 Database** | Base de datos en desarrollo |
+| **Oracle Database** | Base de datos en producción / OCI |
+| **Flyway** | Migraciones de base de datos |
+| **Springdoc OpenAPI** | Documentación Swagger |
+| **Spring Security** | Protección de rutas internas y configuración de acceso |
+| **Maven** | Gestión de dependencias y ejecución |
+
+---
+
+## Requisitos previos
+
+Antes de ejecutar el proyecto localmente, asegúrate de tener instalado:
+
+- **Java 21**
+- **Maven**
+
+También puedes utilizar el **Maven Wrapper (`mvnw`)** incluido en el proyecto, por lo que no es obligatorio tener Maven instalado globalmente.
+
+---
+
+## Configuración local
+
+El proyecto utiliza perfiles de Spring para separar los entornos de desarrollo y producción.
+
+El perfil de desarrollo utiliza una base de datos **H2 en memoria**, lo que permite ejecutar y probar el backend sin instalar una base de datos externa.
+
+### 1. Clonar el repositorio
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd <NOMBRE_DEL_REPOSITORIO>
+```
+
+### 2. Activar el perfil de desarrollo
+
+Verifica que en `application.properties` esté configurada la siguiente propiedad:
+
+```properties
+spring.profiles.active=dev
+```
+
+Esto habilitará la configuración correspondiente al entorno local y la base de datos H2.
+
+### 3. Ejecutar el proyecto
+
+#### Windows
+
+```bash
+.\mvnw.cmd spring-boot:run
+```
+
+#### Linux / macOS
+
+```bash
+./mvnw spring-boot:run
+```
+
+### 4. Acceder a la API
+
+Una vez iniciado el proyecto, la API estará disponible en:
+
+```text
+http://localhost:8080
+```
+
+### 5. Consola H2
+
+La consola de la base de datos H2 puede abrirse en:
+
+```text
+http://localhost:8080/h2-console
+```
+
+Credenciales locales:
+
+| Campo | Valor |
+|---|---|
+| Usuario | `sa` |
+| Contraseña | Sin contraseña |
+
+---
+
+## Configuración para producción
+
+Para desplegar la aplicación utilizando **Oracle Database en Oracle Cloud Infrastructure (OCI)**, se debe activar el perfil de producción:
+
+```properties
+spring.profiles.active=prod
+```
+
+Además, deben configurarse las siguientes variables de entorno en el servidor o contenedor:
+
+| Variable | Descripción |
+|---|---|
+| `DB_HOST` | Dirección del host de Oracle Database |
+| `DB_PORT` | Puerto de conexión |
+| `DB_SERVICE_NAME` | Nombre del servicio de la base de datos |
+| `DB_USER` | Usuario de la base de datos |
+| `DB_PASSWORD` | Contraseña de la base de datos |
+
+---
+
+## Documentación Swagger
+
+La API está documentada mediante **Springdoc OpenAPI**.
+
+Con el proyecto en ejecución, Swagger UI está disponible en:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+Desde esta interfaz es posible consultar y probar los endpoints disponibles.
+
+---
+
+# Endpoints de la API
+
+## 1. Procesar análisis energético
+
+Procesa los parámetros enviados por el usuario, calcula el nivel de eficiencia energética, estima el costo del consumo y devuelve recomendaciones.
+
+### Endpoint
+
+```http
+POST /analisis-energetico
+```
+
+**Acceso:** Público
+
+### Request
+
+El endpoint recibe un objeto `AnalisisRequest`.
+
+| Campo | Tipo | Descripción | Ejemplo |
+|---|---|---|---|
+| `consumo_kwh` | `Double` | Consumo mensual en kWh. Obligatorio y positivo. | `200.0` |
+| `uso_horario_pico` | `Boolean` | Indica si existe mayor consumo entre las 18:00 y 23:00. | `false` |
+| `cantidad_equipos` | `Integer` | Número total de electrodomésticos o equipos en uso. | `6` |
+| `tipo_inmueble` | `String` | Tipo de inmueble: `casa`, `oficina` o `comercio`. | `"casa"` |
+| `horas_alto_consumo` | `Integer` | Horas promedio diarias de alto consumo. | `3` |
+
+### Ejemplo de petición
+
+```json
+{
+  "consumo_kwh": 200.0,
+  "uso_horario_pico": false,
+  "cantidad_equipos": 6,
+  "tipo_inmueble": "casa",
+  "horas_alto_consumo": 3
+}
+```
+
+### Respuesta exitosa
+
+**HTTP `200 OK`**
+
+Ejemplo de `AnalisisResponse`:
+
+```json
+{
+  "categoria": "Eficiente",
+  "probabilidad": 42.4,
+  "recomendaciones": [],
+  "costo_estimado": 150.0
+}
+```
+
+El costo se estima utilizando una tarifa fija de:
+
+```text
+$0.75 por kWh
+```
+
+### Manejo de errores
+
+Si la petición contiene datos nulos, inválidos o negativos, el `GlobalExceptionHandler` intercepta la solicitud.
+
+La API devuelve:
+
+```http
+400 Bad Request
+```
+
+junto con una lista de mensajes que indican qué campos no superaron la validación.
+
+---
+
+## 2. Obtener historial de análisis
+
+Recupera todos los análisis previamente almacenados en la base de datos.
+
+### Endpoint
+
+```http
+GET /analisis-energetico/historial
+```
+
+**Acceso:** Público
+
+### Respuesta exitosa
+
+```http
+200 OK
+```
+
+La respuesta contiene un arreglo JSON de objetos `AnalisisEnergetico`, incluyendo:
+
+- Parámetros de entrada.
+- Categoría obtenida.
+- Probabilidad o score calculado.
+- Costo estimado.
+- Recomendaciones.
+- Fecha de creación.
+
+---
+
+# Lógica de negocio
+
+El proyecto implementa una estrategia basada en la interfaz:
+
+```text
+DataScienceClient
+```
+
+Esta abstracción permite cambiar la forma en que se calcula el score de eficiencia dependiendo del perfil activo.
+
+## Perfil `prod`
+
+Implementación:
+
+```text
+RestDataScienceClient
+```
+
+En producción, el backend se comunica mediante HTTP con un microservicio externo desarrollado en **Python**, encargado de exponer el modelo real de Machine Learning.
+
+## Perfil `dev`
+
+Implementación:
+
+```text
+MockDataScienceClient
+```
+
+Durante el desarrollo y las pruebas del MVP, el sistema utiliza un motor interno de reglas que simula el comportamiento del modelo de ciencia de datos.
+
+---
+
+# Cálculo del score
+
+En el perfil de desarrollo, el score de ineficiencia se calcula utilizando las siguientes reglas.
+
+### 1. Consumo base
+
+```text
+consumo_kwh / 10
+```
+
+### 2. Penalización por horario pico
+
+Si:
+
+```text
+uso_horario_pico = true
+```
+
+se agregan:
+
+```text
++8 puntos
+```
+
+### 3. Cantidad de equipos
+
+Por cada equipo declarado:
+
+```text
++0.5 puntos
+```
+
+### 4. Tipo de inmueble
+
+| Tipo de inmueble | Puntos |
+|---|---:|
+| Casa | `+10` |
+| Oficina | `+7` |
+| Comercio | `+4` |
+
+### 5. Horas de alto consumo
+
+Se calcula:
+
+```text
+horas_alto_consumo × 0.8
+```
+
+y el resultado se agrega al score total.
+
+---
+
+# Clasificación de resultados
+
+El score obtenido determina la categoría de eficiencia energética.
+
+| Score | Categoría | Comportamiento |
+|---|---|---|
+| `>= 70.01` | **Ineficiente** | Genera múltiples recomendaciones orientadas a reducir el consumo en horario pico y evaluar los equipos utilizados. |
+| `55.01 - 70.00` | **Moderado** | Genera recomendaciones leves, como apagar pantallas o equipos que no estén en uso. |
+| `<= 55.00` | **Eficiente** | No genera recomendaciones adicionales. |
+
+---
+
+## Estimación del costo
+
+El costo energético mensual se obtiene multiplicando el consumo registrado por una tarifa fija de `$0.75` por kWh.
+
+```text
+costo_estimado = consumo_kwh × 0.75
+```
+
+Ejemplo:
+
+```text
+200 kWh × $0.75 = $150.00
+```
+
+De acuerdo con la estructura descrita en la documentación del proyecto, el servicio principal procesa el resultado, calcula el costo estimado y persiste la entidad antes de devolver la respuesta al controlador.
+
+---
+
+# Base de datos
+
+La persistencia se realiza mediante **Spring Data JPA**.
+
+La entidad principal es:
+
+```text
+AnalisisEnergetico
+```
+
+y se encuentra asociada a la tabla:
+
+```text
+analisis_energetico
+```
+
+## Campos almacenados
+
+### Datos de entrada
+
+- `consumo_kwh`
+- `uso_horario_pico`
+- `cantidad_equipos`
+- `tipo_inmueble`
+- `horas_alto_consumo`
+
+### Datos calculados
+
+- `categoria`
+- `probabilidad`
+- `costo_estimado_mensual`
+- `recomendaciones`
+
+El campo `recomendaciones` utiliza un tipo equivalente a `TEXT`.
+
+### Metadatos
+
+- `fecha_creacion`
+
+La fecha de creación se genera automáticamente mediante:
+
+```java
+@PrePersist
+```
+
+---
+
+# Migraciones con Flyway
+
+Para el entorno de producción con Oracle se utiliza **Flyway** para controlar y versionar el esquema de la base de datos.
+
+La configuración incluye:
+
+```properties
+spring.flyway.baseline-on-migrate=true
+```
+
+Esta propiedad permite inicializar correctamente el historial de migraciones cuando se trabaja sobre una base de datos existente.
+
+Si es necesario, Flyway puede tomar el estado actual de la base como una versión inicial o **baseline**, ayudando a evitar conflictos durante el despliegue sobre OCI.
+
+---
+
+## Flujo general del backend
+
+> Síntesis visual elaborada a partir de la estructura descrita en la documentación original.
+
+```text
+Cliente
+   │
+   ▼
+Controller
+   │
+   ▼
+Servicio de análisis
+   │
+   ├── Perfil dev  ──► MockDataScienceClient
+   │                     │
+   │                     └── Motor de reglas
+   │
+   └── Perfil prod ──► RestDataScienceClient
+                         │
+                         └── Microservicio Python / ML
+   │
+   ▼
+Cálculo de categoría y costo
+   │
+   ▼
+Persistencia con Spring Data JPA
+   │
+   ▼
+H2 / Oracle Database
+   │
+   ▼
+Respuesta JSON
+```
+
+---
+
+## Estado de los perfiles
+
+| Perfil | Motor de análisis | Base de datos |
+|---|---|---|
+| `dev` | `MockDataScienceClient` / reglas internas | H2 |
+| `prod` | `RestDataScienceClient` / servicio Python ML | Oracle Database |
+
+---
+
+## Proyecto
+
+**EnergIA — Hackathon ONE**
+
+Backend orientado al análisis de consumo energético, clasificación de eficiencia y generación de recomendaciones para optimizar el uso de energía.
