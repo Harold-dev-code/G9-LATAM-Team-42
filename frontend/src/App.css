@@ -1563,6 +1563,44 @@
   .app-shell {
     grid-template-columns: 1fr;
   }
+
+  /* Tablas con scroll horizontal en móvil */
+  .history-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .history-table {
+    min-width: 560px;
+  }
+
+  /* Evita que la fecha se rompa carácter por carácter */
+  .history-table td,
+  .history-table th {
+    white-space: nowrap;
+    padding: 10px 12px;
+  }
+
+  /* Cards de reporte en una columna */
+  .report-summary-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Toolbar de reportes apilado */
+  .report-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .report-toolbar-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .report-toolbar-actions button {
+    flex: 1;
+  }
 }
 
 /* ── Auth Views ─────────────────────────────────────────────── */
