@@ -12,6 +12,14 @@ function arbValidFormData() {
   return fc.record({
     consumo_kwh: fc.double({ min: 50, max: 2000, noNaN: true }).map(String),
     tipo_inmueble: fc.constantFrom('casa', 'oficina', 'apartamento', 'comercio'),
+    nombre_inmueble: fc.string({ minLength: 1, maxLength: 40 }),
+    direccion_inmueble: fc.string({ maxLength: 80 }),
+    pais: fc.constantFrom('Colombia', 'México', 'Chile', 'Argentina', 'Perú', 'Brasil'),
+    moneda: fc.constantFrom('COP', 'MXN', 'CLP', 'ARS', 'PEN', 'BRL'),
+    periodo: fc.constantFrom('mensual', 'trimestral', 'anual'),
+    mes_facturado: fc.integer({ min: 1, max: 12 }).map(String),
+    anio_facturado: fc.integer({ min: 2020, max: 2030 }).map(String),
+    etiqueta: fc.constantFrom('Residencial', 'Comercial'),
     personas_vivienda: fc.integer({ min: 1, max: 10 }).map(String),
     cantidad_equipos: fc.integer({ min: 1, max: 20 }).map(String),
     horas_alto_consumo: fc.double({ min: 0, max: 24, noNaN: true }).map(String),
@@ -23,6 +31,7 @@ function arbValidFormData() {
     tiene_aire_acondicionado: fc.boolean(),
     tiene_calentador_electrico: fc.boolean(),
     electrodomesticos_eficientes: fc.boolean(),
+    tarifa_kwh: fc.double({ min: 0.01, max: 5, noNaN: true }).map(String),
   });
 }
 
@@ -75,17 +84,34 @@ function arbInvalidFormData() {
     validEquipos: fc.integer({ min: 1, max: 20 }).map(String),
     validHoras: fc.double({ min: 0, max: 24, noNaN: true }).map(String),
     validTipo: fc.constantFrom('casa', 'oficina', 'apartamento', 'comercio'),
+    nombre_inmueble: fc.string({ minLength: 1, maxLength: 40 }),
+    direccion_inmueble: fc.string({ maxLength: 80 }),
+    pais: fc.constantFrom('Colombia', 'México', 'Chile', 'Argentina', 'Perú', 'Brasil'),
+    moneda: fc.constantFrom('COP', 'MXN', 'CLP', 'ARS', 'PEN', 'BRL'),
+    periodo: fc.constantFrom('mensual', 'trimestral', 'anual'),
+    mes_facturado: fc.integer({ min: 1, max: 12 }).map(String),
+    anio_facturado: fc.integer({ min: 2020, max: 2030 }).map(String),
+    etiqueta: fc.constantFrom('Residencial', 'Comercial'),
     uso_horario_pico: fc.boolean(),
     antiguedad_inmueble: fc.oneof(fc.constant(''), fc.integer({ min: 2, max: 31 }).map(String)),
     tiene_aire_acondicionado: fc.boolean(),
     tiene_calentador_electrico: fc.boolean(),
     electrodomesticos_eficientes: fc.boolean(),
+    tarifa_kwh: fc.double({ min: 0.01, max: 5, noNaN: true }).map(String),
   }).filter(d => d.corruptConsumo || d.corruptPersonas || d.corruptEquipos || d.corruptHoras || d.corruptTipo)
     .map(d => {
       const corruptedFields = [];
       const formData = {
         consumo_kwh: d.corruptConsumo ? d.invalidConsumoVal : d.validConsumo,
         tipo_inmueble: d.corruptTipo ? d.invalidTipoVal : d.validTipo,
+        nombre_inmueble: d.nombre_inmueble,
+        direccion_inmueble: d.direccion_inmueble,
+        pais: d.pais,
+        moneda: d.moneda,
+        periodo: d.periodo,
+        mes_facturado: d.mes_facturado,
+        anio_facturado: d.anio_facturado,
+        etiqueta: d.etiqueta,
         personas_vivienda: d.corruptPersonas ? d.invalidPersonasVal : d.validPersonas,
         cantidad_equipos: d.corruptEquipos ? d.invalidEquiposVal : d.validEquipos,
         horas_alto_consumo: d.corruptHoras ? d.invalidHorasVal : d.validHoras,
@@ -94,6 +120,7 @@ function arbInvalidFormData() {
         tiene_aire_acondicionado: d.tiene_aire_acondicionado,
         tiene_calentador_electrico: d.tiene_calentador_electrico,
         electrodomesticos_eficientes: d.electrodomesticos_eficientes,
+        tarifa_kwh: d.tarifa_kwh,
       };
 
       if (d.corruptConsumo) corruptedFields.push('consumo_kwh');
@@ -111,6 +138,14 @@ function arbArbitraryFormData() {
   return fc.record({
     consumo_kwh: fc.oneof(fc.string(), fc.double().map(String), fc.constant(null), fc.constant(undefined), fc.constant('')),
     tipo_inmueble: fc.oneof(fc.string(), fc.constant(null), fc.constant(undefined), fc.constantFrom('casa', 'oficina', 'apartamento', 'comercio')),
+    nombre_inmueble: fc.oneof(fc.string(), fc.constant(null), fc.constant(undefined)),
+    direccion_inmueble: fc.oneof(fc.string(), fc.constant(null), fc.constant(undefined)),
+    pais: fc.oneof(fc.string(), fc.constant(null), fc.constant(undefined), fc.constantFrom('Colombia', 'México', 'Chile', 'Argentina', 'Perú', 'Brasil')),
+    moneda: fc.oneof(fc.string(), fc.constant(null), fc.constant(undefined), fc.constantFrom('COP', 'MXN', 'CLP', 'ARS', 'PEN', 'BRL')),
+    periodo: fc.oneof(fc.string(), fc.constant(null), fc.constant(undefined), fc.constantFrom('mensual', 'trimestral', 'anual')),
+    mes_facturado: fc.oneof(fc.string(), fc.integer().map(String), fc.constant(null), fc.constant(undefined)),
+    anio_facturado: fc.oneof(fc.string(), fc.integer().map(String), fc.constant(null), fc.constant(undefined)),
+    etiqueta: fc.oneof(fc.string(), fc.constant(null), fc.constant(undefined), fc.constantFrom('Residencial', 'Comercial')),
     personas_vivienda: fc.oneof(fc.string(), fc.integer().map(String), fc.constant(null), fc.constant(undefined), fc.constant('')),
     cantidad_equipos: fc.oneof(fc.string(), fc.integer().map(String), fc.constant(null), fc.constant(undefined), fc.constant('')),
     horas_alto_consumo: fc.oneof(fc.string(), fc.double().map(String), fc.constant(null), fc.constant(undefined), fc.constant('')),
@@ -119,6 +154,7 @@ function arbArbitraryFormData() {
     tiene_aire_acondicionado: fc.oneof(fc.boolean(), fc.constant(null), fc.constant(undefined)),
     tiene_calentador_electrico: fc.oneof(fc.boolean(), fc.constant(null), fc.constant(undefined)),
     electrodomesticos_eficientes: fc.oneof(fc.boolean(), fc.constant(null), fc.constant(undefined)),
+    tarifa_kwh: fc.oneof(fc.string(), fc.double().map(String), fc.constant(null), fc.constant(undefined), fc.constant('')),
   });
 }
 

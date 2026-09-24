@@ -2,6 +2,8 @@ package EnergiAI.demo.controller;
 
 import EnergiAI.demo.dto.AnalisisRequest;
 import EnergiAI.demo.dto.AnalisisResponse;
+import EnergiAI.demo.exception.AnalisisDuplicadoException;
+import EnergiAI.demo.exception.UsuarioNoAutenticadoException;
 import EnergiAI.demo.model.AnalisisEnergetico;
 import EnergiAI.demo.service.AnalisisService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/analisis-energetico")
@@ -51,5 +54,25 @@ public class AnalisisController {
     public ResponseEntity<Void> eliminarAnalisis(@PathVariable Long id) {
         analisisService.eliminarAnalisis(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(AnalisisDuplicadoException.class)
+    public ResponseEntity<Map<String, Object>> manejarAnalisisDuplicado(AnalisisDuplicadoException exception) {
+        return ResponseEntity.status(409).body(Map.of(
+                "status", 409,
+                "error", "Conflict",
+                "message", exception.getMessage(),
+                "messages", List.of(exception.getMessage())
+        ));
+    }
+
+    @ExceptionHandler(UsuarioNoAutenticadoException.class)
+    public ResponseEntity<Map<String, Object>> manejarUsuarioNoAutenticado(UsuarioNoAutenticadoException exception) {
+        return ResponseEntity.status(401).body(Map.of(
+                "status", 401,
+                "error", "Unauthorized",
+                "message", exception.getMessage(),
+                "messages", List.of(exception.getMessage())
+        ));
     }
 }

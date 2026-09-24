@@ -23,6 +23,10 @@ public class AnalisisResponse {
 
     @Schema(description = "Costo económico estimado en base al consumo", example = "337.87")
     private Double costo_estimado; // Costo económico proyectado
+    private Double costo_estimado_usd;
+    private Double costo_estimado_local;
+    private String pais;
+    private String moneda;
 
     // Constructor vacío
     public AnalisisResponse() {
@@ -67,5 +71,37 @@ public class AnalisisResponse {
 
     public void setCosto_estimado(Double costo_estimado) {
         this.costo_estimado = costo_estimado;
+    }
+
+    public Double getCosto_estimado_usd() {
+        return costo_estimado_usd;
+    }
+
+    public void setCosto_estimado_usd(Double costo_estimado_usd) {
+        this.costo_estimado_usd = costo_estimado_usd;
+    }
+
+    public Double getCosto_estimado_local() {
+        return costo_estimado_local;
+    }
+
+    public void setCosto_estimado_local(Double costo_estimado_local) {
+        this.costo_estimado_local = costo_estimado_local;
+    }
+
+    public String getPais() {
+        return pais;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
+
+    public String getMoneda() {
+        return moneda;
+    }
+
+    public void setMoneda(String moneda) {
+        this.moneda = moneda;
     }
 }

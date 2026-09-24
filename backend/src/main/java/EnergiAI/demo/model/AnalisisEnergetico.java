@@ -13,18 +13,35 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "analisis_energetico")
+@Table(name = "analisis_energetico", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_analisis_inmueble_periodo",
+        columnNames = {"inmueble_id", "mes_facturado", "anio_facturado"})
+})
 public class AnalisisEnergetico {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "inmueble_id", nullable = false)
+    private Inmueble inmueble;
+
+    @Column(nullable = false)
+    private Integer mesFacturado;
+
+    @Column(nullable = false)
+    private Integer anioFacturado;
+
     // Campos de entrada
     private Double consumoKwh;
     private Integer usoHorarioPico;
     private Integer cantidadEquipos;
     private String tipoInmueble;
+    private String pais;
+    private String moneda;
+    private String periodo;
+    private String etiqueta;
     private Double horasAltoConsumo;
     private Integer personasVivienda;
     private Integer antiguedadInmueble;

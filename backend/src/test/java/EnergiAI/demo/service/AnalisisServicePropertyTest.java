@@ -10,6 +10,7 @@ import net.jqwik.api.*;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
@@ -31,12 +32,14 @@ class AnalisisServicePropertyTest {
         AnalisisEnergeticoRepository repository = mock(AnalisisEnergeticoRepository.class);
         DataScienceClient dataScienceClient = mock(DataScienceClient.class);
         GeminiClient geminiClient = mock(GeminiClient.class);
+        TipoDeCambioService tipoDeCambioService = mock(TipoDeCambioService.class);
 
         when(dataScienceClient.obtenerPrediccion(any()))
                 .thenReturn(new PrediccionResponse("Eficiente", 0.85, List.of("Recomendacion")));
         when(repository.save(any())).thenReturn(null);
+        when(tipoDeCambioService.obtenerTasasLatam(anyString())).thenReturn(Map.of("COP", 1.0));
 
-        AnalisisService service = new AnalisisService(repository, dataScienceClient, geminiClient);
+        AnalisisService service = new AnalisisService(repository, dataScienceClient, geminiClient, tipoDeCambioService);
         service.procesarAnalisisEnergetico(request, null);
 
         ArgumentCaptor<AnalisisRequest> captor = ArgumentCaptor.forClass(AnalisisRequest.class);
@@ -62,12 +65,14 @@ class AnalisisServicePropertyTest {
         AnalisisEnergeticoRepository repository = mock(AnalisisEnergeticoRepository.class);
         DataScienceClient dataScienceClient = mock(DataScienceClient.class);
         GeminiClient geminiClient = mock(GeminiClient.class);
+        TipoDeCambioService tipoDeCambioService = mock(TipoDeCambioService.class);
 
         when(dataScienceClient.obtenerPrediccion(any()))
                 .thenReturn(new PrediccionResponse("Eficiente", 0.9, List.of()));
         when(repository.save(any())).thenReturn(null);
+        when(tipoDeCambioService.obtenerTasasLatam(anyString())).thenReturn(Map.of("COP", 1.0));
 
-        AnalisisService service = new AnalisisService(repository, dataScienceClient, geminiClient);
+        AnalisisService service = new AnalisisService(repository, dataScienceClient, geminiClient, tipoDeCambioService);
         AnalisisResponse response = service.procesarAnalisisEnergetico(request, null);
 
         double expectedCosto = request.getConsumo_kwh() * 0.75;

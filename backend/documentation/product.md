@@ -46,7 +46,7 @@ Frontend (React 19 + Vite 8) → Backend (Spring Boot 4.1) → Servicio Flask (M
 
 ## Tecnologías
 
-- **Framework:** Spring Boot 4.1.0, Java 21
+- **Framework:** Spring Boot 4.1.0, Java 25
 - **Persistencia:** Spring Data JPA, Hibernate 7.4, Flyway
 - **Base de datos:** H2 (dev) / Oracle Autonomous DB (prod)
 - **Seguridad:** Spring Security (CORS habilitado + autenticación básica)

@@ -12,6 +12,17 @@ import StatusBadge from "./StatusBadge";
 import useHistorial from "../hooks/useHistorial";
 import { deleteAnalisis, ApiError } from "../api/energiaiClient";
 
+function getInmuebleNombre(registro) {
+  return registro.nombreInmueble || registro.inmueble?.nombre || registro.tipoInmueble || "Sin nombre";
+}
+
+function getPeriodoFacturado(registro) {
+  if (registro.mesFacturado && registro.anioFacturado) {
+    return `${String(registro.mesFacturado).padStart(2, "0")}/${registro.anioFacturado}`;
+  }
+  return "—";
+}
+
 const dateFormatter = new Intl.DateTimeFormat("es-DO", {
   day: "2-digit",
   month: "short",
@@ -39,19 +50,32 @@ export default function HistoryView({ refreshKey, user }) {
   const { registros, loading, error, refetch } = useHistorial(refreshKey, user?.userId);
   const [deletingId, setDeletingId] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
+  const [inmuebleFiltro, setInmuebleFiltro] = useState("todos");
+
+  const inmuebles = useMemo(
+    () => [...new Set(registros.map(getInmuebleNombre))].sort((a, b) => a.localeCompare(b)),
+    [registros]
+  );
+
+  const registrosFiltrados = useMemo(
+    () => inmuebleFiltro === "todos"
+      ? registros
+      : registros.filter((registro) => getInmuebleNombre(registro) === inmuebleFiltro),
+    [registros, inmuebleFiltro]
+  );
 
   const chartData = useMemo(() => {
-    return [...registros]
+    return [...registrosFiltrados]
       .sort((a, b) => new Date(a.fechaCreacion) - new Date(b.fechaCreacion))
       .map((r) => ({
         fecha: r.fechaCreacion ? dateFormatter.format(new Date(r.fechaCreacion)) : "—",
         consumo: r.consumoKwh,
       }));
-  }, [registros]);
+  }, [registrosFiltrados]);
 
   const sortedForTable = useMemo(
-    () => [...registros].sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion)),
-    [registros]
+    () => [...registrosFiltrados].sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion)),
+    [registrosFiltrados]
   );
 
   async function handleDelete(registro) {
@@ -137,12 +161,21 @@ export default function HistoryView({ refreshKey, user }) {
 
       {deleteError && <p className="field-error">{deleteError}</p>}
 
+      <div className="form-field history-filter">
+        <label htmlFor="historial-inmueble">Inmueble</label>
+        <select id="historial-inmueble" value={inmuebleFiltro} onChange={(e) => setInmuebleFiltro(e.target.value)}>
+          <option value="todos">Todos los inmuebles</option>
+          {inmuebles.map((inmueble) => <option key={inmueble} value={inmueble}>{inmueble}</option>)}
+        </select>
+      </div>
+
       <div className="history-table-wrap">
         <table className="history-table">
           <thead>
             <tr>
               <th>Fecha</th>
               <th>Inmueble</th>
+              <th>Período</th>
               <th>Consumo</th>
               <th>Categoría</th>
               <th>Costo est.</th>
@@ -155,7 +188,8 @@ export default function HistoryView({ refreshKey, user }) {
                 <td className="mono">
                   {r.fechaCreacion ? dateFormatter.format(new Date(r.fechaCreacion)) : "—"}
                 </td>
-                <td style={{ textTransform: "capitalize" }}>{r.tipoInmueble}</td>
+                <td>{getInmuebleNombre(r)}</td>
+                <td className="mono">{getPeriodoFacturado(r)}</td>
                 <td className="mono">{r.consumoKwh} kWh</td>
                 <td>
                   <StatusBadge categoria={r.categoria} size="sm" />

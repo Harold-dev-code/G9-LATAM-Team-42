@@ -3,7 +3,6 @@ package EnergiAI.demo.service;
 import EnergiAI.demo.dto.TipoDeCambioResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedHashMap;
@@ -11,6 +10,14 @@ import java.util.Map;
 
 @Service
 public class TipoDeCambioService {
+
+        private static final Map<String, Double> TASAS_DESARROLLO = Map.ofEntries(
+            Map.entry("USD", 1.0), Map.entry("ARS", 1200.0), Map.entry("BOB", 6.9),
+            Map.entry("BRL", 5.4), Map.entry("CLP", 950.0), Map.entry("COP", 4200.0),
+            Map.entry("CRC", 510.0), Map.entry("DOP", 60.0), Map.entry("GTQ", 7.8),
+            Map.entry("HNL", 25.0), Map.entry("MXN", 19.0), Map.entry("NIO", 36.8),
+            Map.entry("PEN", 3.8), Map.entry("PYG", 7900.0), Map.entry("UYU", 40.0),
+            Map.entry("VES", 120.0));
 
     private final RestTemplate restTemplate;
     private final String apiUrl;
@@ -25,6 +32,9 @@ public class TipoDeCambioService {
     }
 
     public Map<String, Double> obtenerTasasLatam(String monedaBase){
+        if (apiKey == null || apiKey.isBlank() || apiKey.startsWith("dummy-")) {
+            return TASAS_DESARROLLO;
+        }
         String url = String.format("%s/%s/latest/%s", apiUrl, apiKey, monedaBase);
 
         TipoDeCambioResponse response = restTemplate.getForObject(url, TipoDeCambioResponse.class);
@@ -57,5 +67,9 @@ public class TipoDeCambioService {
         tasasLatam.put("VES", tasas.getOrDefault("VES", 0.0)); // Venezuela
 
         return tasasLatam;
+    }
+
+    public double obtenerTasa(String moneda) {
+        return obtenerTasasLatam("USD").getOrDefault(moneda.toUpperCase(), 1.0);
     }
 }

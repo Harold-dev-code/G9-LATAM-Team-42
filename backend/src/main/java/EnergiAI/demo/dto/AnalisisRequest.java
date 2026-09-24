@@ -29,6 +29,23 @@ public class AnalisisRequest {
     @Schema(description = "Tipo de propiedad analizada", example = "Casa", allowableValues = {"Casa", "Oficina", "Apartamento", "Comercio"})
     private String tipo_inmueble;
 
+    @NotBlank(message = "El país es obligatorio")
+    @Schema(description = "País del análisis para personalizar la conversión y la tarifa local", example = "Colombia")
+    private String pais;
+
+    @NotBlank(message = "La moneda es obligatoria")
+    @Schema(description = "Moneda local asociada al país", example = "COP")
+    private String moneda;
+
+    @NotBlank(message = "El período es obligatorio")
+    @Schema(description = "Período del análisis", example = "mensual")
+    private String periodo;
+
+    @NotBlank(message = "La etiqueta es obligatoria")
+    @Pattern(regexp = "Residencial|Comercial", message = "La etiqueta debe ser: Residencial o Comercial")
+    @Schema(description = "Etiqueta de uso del inmueble", example = "Residencial", allowableValues = {"Residencial", "Comercial"})
+    private String etiqueta;
+
     @NotNull(message = "La cantidad de personas en la vivienda es obligatoria")
     @Min(value = 1, message = "Debe haber al menos 1 persona en la vivienda")
     @Max(value = 10, message = "El máximo de personas en la vivienda es 10")
@@ -67,6 +84,21 @@ public class AnalisisRequest {
     @Schema(description = "Tarifa del kWh en USD que aplica el usuario", example = "0.75")
     private Double tarifa_kwh;
 
+    @NotBlank(message = "El nombre del inmueble es obligatorio")
+    private String nombre_inmueble;
+
+    private String direccion_inmueble;
+
+    @NotNull(message = "El mes facturado es obligatorio")
+    @Min(value = 1, message = "El mes facturado debe estar entre 1 y 12")
+    @Max(value = 12, message = "El mes facturado debe estar entre 1 y 12")
+    private Integer mes_facturado;
+
+    @NotNull(message = "El año facturado es obligatorio")
+    @Min(value = 2000, message = "El año facturado no es válido")
+    @Max(value = 2100, message = "El año facturado no es válido")
+    private Integer anio_facturado;
+
     // Constructor vacío
     public AnalisisRequest() {
     }
@@ -79,6 +111,10 @@ public class AnalisisRequest {
                            Integer electrodomesticos_eficientes) {
         this.consumo_kwh = consumo_kwh;
         this.tipo_inmueble = tipo_inmueble;
+        this.pais = "Colombia";
+        this.moneda = "COP";
+        this.periodo = "mensual";
+        this.etiqueta = "Residencial";
         this.personas_vivienda = personas_vivienda;
         this.cantidad_equipos = cantidad_equipos;
         this.horas_alto_consumo = horas_alto_consumo;
@@ -87,6 +123,28 @@ public class AnalisisRequest {
         this.tiene_aire_acondicionado = tiene_aire_acondicionado;
         this.tiene_calentador_electrico = tiene_calentador_electrico;
         this.electrodomesticos_eficientes = electrodomesticos_eficientes;
+    }
+
+    public AnalisisRequest(Double consumo_kwh, String tipo_inmueble, String pais, String moneda, String periodo, String etiqueta,
+                           Integer personas_vivienda, Integer cantidad_equipos, Double horas_alto_consumo,
+                           Integer uso_horario_pico, Integer antiguedad_inmueble,
+                           Integer tiene_aire_acondicionado, Integer tiene_calentador_electrico,
+                           Integer electrodomesticos_eficientes, Double tarifa_kwh) {
+        this.consumo_kwh = consumo_kwh;
+        this.tipo_inmueble = tipo_inmueble;
+        this.pais = pais;
+        this.moneda = moneda;
+        this.periodo = periodo;
+        this.etiqueta = etiqueta;
+        this.personas_vivienda = personas_vivienda;
+        this.cantidad_equipos = cantidad_equipos;
+        this.horas_alto_consumo = horas_alto_consumo;
+        this.uso_horario_pico = uso_horario_pico;
+        this.antiguedad_inmueble = antiguedad_inmueble;
+        this.tiene_aire_acondicionado = tiene_aire_acondicionado;
+        this.tiene_calentador_electrico = tiene_calentador_electrico;
+        this.electrodomesticos_eficientes = electrodomesticos_eficientes;
+        this.tarifa_kwh = tarifa_kwh;
     }
 
     // Getters y Setters
@@ -105,6 +163,38 @@ public class AnalisisRequest {
 
     public void setTipo_inmueble(String tipo_inmueble) {
         this.tipo_inmueble = tipo_inmueble;
+    }
+
+    public String getPais() {
+        return pais;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
+
+    public String getMoneda() {
+        return moneda;
+    }
+
+    public void setMoneda(String moneda) {
+        this.moneda = moneda;
+    }
+
+    public String getPeriodo() {
+        return periodo;
+    }
+
+    public void setPeriodo(String periodo) {
+        this.periodo = periodo;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    public void setEtiqueta(String etiqueta) {
+        this.etiqueta = etiqueta;
     }
 
     public Integer getPersonas_vivienda() {
@@ -177,5 +267,37 @@ public class AnalisisRequest {
 
     public void setTarifa_kwh(Double tarifa_kwh) {
         this.tarifa_kwh = tarifa_kwh;
+    }
+
+    public String getNombre_inmueble() {
+        return nombre_inmueble;
+    }
+
+    public void setNombre_inmueble(String nombre_inmueble) {
+        this.nombre_inmueble = nombre_inmueble;
+    }
+
+    public String getDireccion_inmueble() {
+        return direccion_inmueble;
+    }
+
+    public void setDireccion_inmueble(String direccion_inmueble) {
+        this.direccion_inmueble = direccion_inmueble;
+    }
+
+    public Integer getMes_facturado() {
+        return mes_facturado;
+    }
+
+    public void setMes_facturado(Integer mes_facturado) {
+        this.mes_facturado = mes_facturado;
+    }
+
+    public Integer getAnio_facturado() {
+        return anio_facturado;
+    }
+
+    public void setAnio_facturado(Integer anio_facturado) {
+        this.anio_facturado = anio_facturado;
     }
 }
