@@ -79,7 +79,7 @@ describe('buildPayload - Property-Based Tests', () => {
    * Property 4: buildPayload produces structurally complete and type-correct payloads
    *
    * For any valid form data object, buildPayload SHALL produce an object with exactly
-   * the 10 keys defined in the API contract where numeric fields are Number types,
+   * the 19 keys defined in the API contract where numeric fields are Number types,
    * toggle fields are 0 or 1 (not boolean), and tipo_inmueble is a capitalized string
    * from the valid set.
    *

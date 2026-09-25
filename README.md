@@ -1,6 +1,6 @@
 # JouleAI ⚡ [![Demo en Vivo](https://img.shields.io/badge/DEMO-EN%20VIVO-brightgreen?style=for-the-badge&logo=googlechrome&logoColor=white)](http://129.80.145.212)
 <!-- ===== BADGES (pegar justo debajo del título) ===== -->
-[![Java](https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -37,7 +37,7 @@ Cuando un usuario se registra y envía sus datos de consumo, el sistema procesa 
 Frontend (React 19 + Vite 8)
     ↓ POST /auth/register | /auth/login
     ↓ POST /analisis-energetico (+ header X-User-Id)
-Backend (Java 25 + Spring Boot 4.1)
+Backend (Java 21 + Spring Boot 4.1)
     ↓ POST /predict
 Servicio Flask (Python 3.12 + scikit-learn)
     → Modelo Árbol de Decisión (15 features, pipeline .pkl)
@@ -51,7 +51,7 @@ Backend → Frontend (categoria + probabilidad + recomendaciones + costo)
 | Servicio | Tecnología | Puerto | Descripción |
 |----------|-----------|--------|-------------|
 | Frontend | React 19 + Vite 8 | 5173 (dev) / 80 (prod) | SPA con auth, formulario 11 campos, gauge, reportes PDF |
-| Backend | Java 25 + Spring Boot 4.1 | 8080 | API REST, auth BCrypt, integración Flask + Gemini |
+| Backend | Java 21 + Spring Boot 4.1 | 8080 | API REST, auth BCrypt, integración Flask + Gemini |
 | Flask ML | Python 3.12 + scikit-learn | 5000 | Microservicio de inferencia con modelo .pkl |
 | Gemini | Google AI (Gemini 3.5 Flash) | — | Recomendaciones + conversión de moneda |
 | Base de datos | H2 (dev) / Oracle Autonomous (prod) | — | Persistencia de usuarios y análisis |
@@ -89,7 +89,7 @@ JouleAI está desplegado en **Oracle Cloud Infrastructure (OCI)** usando una ins
 ## Cómo ejecutar localmente
 
 ### Prerrequisitos
-- Java 25, Maven
+- Java 21, Maven
 - Python 3.12, pip
 - Node.js 20+
 - (Opcional) Docker + Docker Compose

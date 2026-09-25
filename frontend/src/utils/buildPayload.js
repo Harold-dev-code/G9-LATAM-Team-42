@@ -13,7 +13,7 @@
  * @param {boolean} formData.tiene_aire_acondicionado — toggle state
  * @param {boolean} formData.tiene_calentador_electrico — toggle state
  * @param {boolean} formData.electrodomesticos_eficientes — toggle state
- * @returns {Object} payload — 10-field object matching POST /analisis-energetico contract
+ * @returns {Object} payload — 19-field object matching POST /analisis-energetico contract
  */
 export function buildPayload(formData) {
   const tipoInmueble = capitalize(formData.tipo_inmueble || "Casa");
