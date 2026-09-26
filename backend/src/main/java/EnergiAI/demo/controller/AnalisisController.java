@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import EnergiAI.demo.dto.AnalisisHistorialResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -43,9 +43,27 @@ public class AnalisisController {
     @Operation(summary = "Obtener historial de análisis",
                 description = "Obtener los análisis del usuario autenticado. Si no se envía X-User-Id, retorna todos.")
     @ApiResponse(responseCode = "200", description = "Historial recuperado exitosamente")
-    public ResponseEntity<List<AnalisisEnergetico>> obtenerHistorial(
+    public ResponseEntity<List<AnalisisHistorialResponse>> obtenerHistorial(
             @RequestHeader(value = "X-User-Id", required = false) Long usuarioId) {
-        return ResponseEntity.ok(analisisService.obtenerHistorial(usuarioId));
+        
+        List<AnalisisEnergetico> analisisList = analisisService.obtenerHistorial(usuarioId);
+        
+        List<AnalisisHistorialResponse> responseList = analisisList.stream().map(a -> new AnalisisHistorialResponse(
+                a.getId(),
+                a.getMesFacturado(),
+                a.getAnioFacturado(),
+                a.getConsumoKwh(),
+                a.getCategoria(),
+                a.getProbabilidad(),
+                a.getCostoEstimadoMensual(),
+                a.getTarifaKwh(),
+                a.getRecomendaciones(),
+                a.getFechaCreacion(),
+                a.getInmueble() != null ? a.getInmueble().getNombre() : null,
+                a.getInmueble() != null ? a.getInmueble().getDireccion() : null
+        )).toList();
+
+        return ResponseEntity.ok(responseList);
     }
 
     @DeleteMapping("/{id}")
