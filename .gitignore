@@ -20,3 +20,11 @@ backend/.jqwik-database
 .jqwik-database
 
 .env
+.skia/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+.refact/
+.cursor/
+.claude/

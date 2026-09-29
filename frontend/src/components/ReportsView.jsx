@@ -26,36 +26,35 @@ const dateFormatter = new Intl.DateTimeFormat("es-DO", {
   minute: "2-digit",
 });
 
-const PERIODOS = [
-  { value: "mes", label: "Este mes" },
-  { value: "mes-anterior", label: "Mes anterior" },
-  { value: "todo", label: "Todo el historial" },
+const MONTHS = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
+const YEARS = Array.from({ length: 7 }, (_, index) => new Date().getFullYear() - 5 + index);
 
-function isSameMonth(date, ref) {
-  return date.getFullYear() === ref.getFullYear() && date.getMonth() === ref.getMonth();
+function getInmuebleNombre(registro) {
+  return registro.nombreInmueble || registro.inmueble?.nombre || registro.tipoInmueble || "Sin nombre";
 }
 
-function filterByPeriodo(registros, periodo) {
-  if (periodo === "todo") return registros;
-
-  const now = new Date();
-  const ref = new Date(now);
-  if (periodo === "mes-anterior") {
-    ref.setMonth(ref.getMonth() - 1);
-  }
-
+function filterByPeriodo(registros, mes, anio) {
   return registros.filter((r) => {
-    if (!r.fechaCreacion) return false;
-    return isSameMonth(new Date(r.fechaCreacion), ref);
+    if (mes === "todos" && anio === "todos") return true;
+    const fecha = r.mesFacturado && r.anioFacturado
+      ? { mes: r.mesFacturado, anio: r.anioFacturado }
+      : r.fechaCreacion
+        ? { mes: new Date(r.fechaCreacion).getMonth() + 1, anio: new Date(r.fechaCreacion).getFullYear() }
+        : null;
+    return fecha && (mes === "todos" || Number(mes) === Number(fecha.mes))
+      && (anio === "todos" || Number(anio) === Number(fecha.anio));
   });
 }
 
 function toCsv(registros) {
-  const header = ["Fecha", "Inmueble", "Consumo (kWh)", "Categoría", "Costo estimado (USD)"];
+  const header = ["Fecha", "Mes facturado", "Inmueble", "Consumo (kWh)", "Categoría", "Costo estimado (USD)"];
   const rows = registros.map((r) => [
     r.fechaCreacion ? new Date(r.fechaCreacion).toISOString() : "",
-    r.tipoInmueble ?? "",
+    `${r.mesFacturado ?? ""}/${r.anioFacturado ?? ""}`,
+    getInmuebleNombre(r),
     r.consumoKwh ?? "",
     r.categoria ?? "",
     r.costoEstimadoMensual ?? "",
@@ -70,11 +69,23 @@ export default function ReportsView({ refreshKey }) {
   const userId = localStorage.getItem("userId");
   const { registros, loading, error } = useHistorial(refreshKey, userId);
 
-  const [periodo, setPeriodo] = useState("mes");
+  const [mesFiltro, setMesFiltro] = useState("todos");
+  const [anioFiltro, setAnioFiltro] = useState("todos");
+  const [inmuebleFiltro, setInmuebleFiltro] = useState("todos");
   const [exporting, setExporting] = useState(false);
   const reportRef = useRef(null);
 
-  const filtrados = useMemo(() => filterByPeriodo(registros, periodo), [registros, periodo]);
+  const inmuebles = useMemo(
+    () => [...new Set(registros.map(getInmuebleNombre))].sort((a, b) => a.localeCompare(b)),
+    [registros]
+  );
+
+  const filtrados = useMemo(() => {
+    const porPeriodo = filterByPeriodo(registros, mesFiltro, anioFiltro);
+    return inmuebleFiltro === "todos"
+      ? porPeriodo
+      : porPeriodo.filter((registro) => getInmuebleNombre(registro) === inmuebleFiltro);
+  }, [registros, mesFiltro, anioFiltro, inmuebleFiltro]);
 
   const resumen = useMemo(() => {
     if (filtrados.length === 0) return null;
@@ -97,7 +108,7 @@ export default function ReportsView({ refreshKey }) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `joulai-reporte-${periodo}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `joulai-reporte-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -115,7 +126,7 @@ export default function ReportsView({ refreshKey }) {
       .from(reportRef.current)
       .set({
         margin: 10,
-        filename: `joulai-reporte-${periodo}-${new Date().toISOString().slice(0, 10)}.pdf`,
+        filename: `joulai-reporte-${new Date().toISOString().slice(0, 10)}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
@@ -139,13 +150,26 @@ export default function ReportsView({ refreshKey }) {
 
       <div className="report-toolbar">
         <div className="form-field report-toolbar-select">
-          <label htmlFor="periodo">Período</label>
-          <select id="periodo" value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
-            {PERIODOS.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
+          <label htmlFor="reporte-mes">Mes facturado</label>
+          <select id="reporte-mes" value={mesFiltro} onChange={(e) => setMesFiltro(e.target.value)}>
+            <option value="todos">Todos los meses</option>
+            {MONTHS.map((month, index) => (
+              <option key={month} value={index + 1}>{month}</option>
             ))}
+          </select>
+        </div>
+        <div className="form-field report-toolbar-select">
+          <label htmlFor="reporte-anio">Año facturado</label>
+          <select id="reporte-anio" value={anioFiltro} onChange={(e) => setAnioFiltro(e.target.value)}>
+            <option value="todos">Todos los años</option>
+            {YEARS.map((year) => <option key={year} value={year}>{year}</option>)}
+          </select>
+        </div>
+        <div className="form-field report-toolbar-select">
+          <label htmlFor="reporte-inmueble">Inmueble</label>
+          <select id="reporte-inmueble" value={inmuebleFiltro} onChange={(e) => setInmuebleFiltro(e.target.value)}>
+            <option value="todos">Todos los inmuebles</option>
+            {inmuebles.map((inmueble) => <option key={inmueble} value={inmueble}>{inmueble}</option>)}
           </select>
         </div>
         <div className="report-toolbar-actions">
@@ -194,7 +218,7 @@ export default function ReportsView({ refreshKey }) {
             </div>
             <div className="report-pdf-meta">
               <span><strong>Usuario:</strong> {localStorage.getItem("userName") || "Usuario"}</span>
-              <span><strong>Período:</strong> {PERIODOS.find(p => p.value === periodo)?.label}</span>
+              <span><strong>Mes/año:</strong> {mesFiltro === "todos" ? "Todos" : MONTHS[Number(mesFiltro) - 1]} / {anioFiltro}</span>
               <span><strong>Generado:</strong> {new Date().toLocaleDateString("es-DO", { day: "2-digit", month: "long", year: "numeric" })}</span>
             </div>
           </div>
@@ -277,7 +301,7 @@ export default function ReportsView({ refreshKey }) {
                       <td className="mono">
                         {r.fechaCreacion ? dateFormatter.format(new Date(r.fechaCreacion)) : "—"}
                       </td>
-                      <td style={{ textTransform: "capitalize" }}>{r.tipoInmueble}</td>
+                      <td>{getInmuebleNombre(r)}</td>
                       <td className="mono">{r.consumoKwh} kWh</td>
                       <td>
                         <StatusBadge categoria={r.categoria} size="sm" />

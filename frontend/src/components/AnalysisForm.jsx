@@ -9,9 +9,47 @@ const INMUEBLES = [
   { value: "comercio", label: "Comercio" },
 ];
 
+const PAIS_OPTIONS = [
+  { value: "Colombia", moneda: "COP" },
+  { value: "México", moneda: "MXN" },
+  { value: "Chile", moneda: "CLP" },
+  { value: "Argentina", moneda: "ARS" },
+  { value: "Perú", moneda: "PEN" },
+  { value: "Brasil", moneda: "BRL" },
+  { value: "Uruguay", moneda: "UYU" },
+  { value: "Ecuador", moneda: "USD" },
+  { value: "Guatemala", moneda: "GTQ" },
+  { value: "Honduras", moneda: "HNL" },
+  { value: "Paraguay", moneda: "PYG" },
+  { value: "Bolivia", moneda: "BOB" },
+  { value: "Costa Rica", moneda: "CRC" },
+  { value: "República Dominicana", moneda: "DOP" },
+  { value: "Venezuela", moneda: "VES" },
+];
+
+const MONTH_OPTIONS = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+
+const YEAR_OPTIONS = Array.from({ length: 7 }, (_, index) => new Date().getFullYear() - 5 + index);
+
+function inferEtiqueta(tipoInmueble) {
+  if (tipoInmueble === "oficina" || tipoInmueble === "comercio") return "Comercial";
+  return "Residencial";
+}
+
 const INITIAL_FORM = {
   consumo_kwh: "",
   tipo_inmueble: "casa",
+  nombre_inmueble: "",
+  direccion_inmueble: "",
+  pais: "Colombia",
+  moneda: "COP",
+  periodo: "mensual",
+  mes_facturado: String(new Date().getMonth() + 1),
+  anio_facturado: String(new Date().getFullYear()),
+  etiqueta: "Residencial",
   personas_vivienda: "",
   cantidad_equipos: "",
   horas_alto_consumo: "",
@@ -29,7 +67,16 @@ export default function AnalysisForm({ onSubmit, submitting }) {
   const [touched, setTouched] = useState({});
 
   function update(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      if (field === "tipo_inmueble") {
+        return { ...prev, tipo_inmueble: value, etiqueta: inferEtiqueta(value) };
+      }
+      if (field === "pais") {
+        const pais = PAIS_OPTIONS.find((option) => option.value === value);
+        return { ...prev, pais: value, moneda: pais?.moneda || "COP" };
+      }
+      return { ...prev, [field]: value };
+    });
   }
 
   function handleBlur(field) {
@@ -44,6 +91,11 @@ export default function AnalysisForm({ onSubmit, submitting }) {
     setTouched({
       consumo_kwh: true,
       tipo_inmueble: true,
+      pais: true,
+      moneda: true,
+      nombre_inmueble: true,
+      mes_facturado: true,
+      anio_facturado: true,
       personas_vivienda: true,
       cantidad_equipos: true,
       horas_alto_consumo: true,
@@ -52,6 +104,7 @@ export default function AnalysisForm({ onSubmit, submitting }) {
       tiene_aire_acondicionado: true,
       tiene_calentador_electrico: true,
       electrodomesticos_eficientes: true,
+      tarifa_kwh: true,
     });
     if (Object.keys(validation).length > 0) return;
 
@@ -60,6 +113,69 @@ export default function AnalysisForm({ onSubmit, submitting }) {
 
   return (
     <form className="analysis-form" onSubmit={handleSubmit} noValidate>
+      <div className="form-field">
+        <label htmlFor="nombre_inmueble">Nombre del inmueble</label>
+        <input
+          id="nombre_inmueble"
+          type="text"
+          maxLength={120}
+          placeholder="Ej. Casa Principal"
+          value={form.nombre_inmueble}
+          onChange={(e) => update("nombre_inmueble", e.target.value)}
+          onBlur={() => handleBlur("nombre_inmueble")}
+          aria-invalid={touched.nombre_inmueble && !!errors.nombre_inmueble}
+        />
+        {touched.nombre_inmueble && errors.nombre_inmueble ? (
+          <p className="field-error">{errors.nombre_inmueble}</p>
+        ) : (
+          <p className="field-hint">Identifica este inmueble en tu historial.</p>
+        )}
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="direccion_inmueble">Dirección (opcional)</label>
+        <input
+          id="direccion_inmueble"
+          type="text"
+          maxLength={255}
+          placeholder="Ej. Calle 10 # 20-30"
+          value={form.direccion_inmueble}
+          onChange={(e) => update("direccion_inmueble", e.target.value)}
+        />
+      </div>
+
+      <div className="form-row">
+        <div className="form-field">
+          <label htmlFor="mes_facturado">Mes facturado</label>
+          <select
+            id="mes_facturado"
+            value={form.mes_facturado}
+            onChange={(e) => update("mes_facturado", e.target.value)}
+            onBlur={() => handleBlur("mes_facturado")}
+            aria-invalid={touched.mes_facturado && !!errors.mes_facturado}
+          >
+            {MONTH_OPTIONS.map((month, index) => (
+              <option key={month} value={index + 1}>{month}</option>
+            ))}
+          </select>
+          {touched.mes_facturado && errors.mes_facturado && <p className="field-error">{errors.mes_facturado}</p>}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="anio_facturado">Año facturado</label>
+          <select
+            id="anio_facturado"
+            value={form.anio_facturado}
+            onChange={(e) => update("anio_facturado", e.target.value)}
+            onBlur={() => handleBlur("anio_facturado")}
+            aria-invalid={touched.anio_facturado && !!errors.anio_facturado}
+          >
+            {YEAR_OPTIONS.map((year) => <option key={year} value={year}>{year}</option>)}
+          </select>
+          {touched.anio_facturado && errors.anio_facturado && <p className="field-error">{errors.anio_facturado}</p>}
+        </div>
+      </div>
+
       <div className="form-field">
         <label htmlFor="consumo_kwh">Consumo mensual</label>
         <div className="input-with-suffix">
@@ -83,6 +199,24 @@ export default function AnalysisForm({ onSubmit, submitting }) {
         ) : (
           <p className="field-hint" id="consumo_kwh-hint">Lo que indica tu última factura de luz.</p>
         )}
+      </div>
+
+      <div className="form-row">
+        <div className="form-field">
+          <label htmlFor="pais">País</label>
+          <select
+            id="pais"
+            value={form.pais}
+            onChange={(e) => update("pais", e.target.value)}
+            onBlur={() => handleBlur("pais")}
+            aria-invalid={touched.pais && !!errors.pais}
+          >
+            {PAIS_OPTIONS.map((pais) => (
+              <option key={pais.value} value={pais.value}>{pais.value}</option>
+            ))}
+          </select>
+          {touched.pais && errors.pais && <p className="field-error">{errors.pais}</p>}
+        </div>
       </div>
 
       <div className="form-row">

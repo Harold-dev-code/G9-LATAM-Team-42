@@ -10,6 +10,14 @@ function arbValidFormData() {
   return fc.record({
     consumo_kwh: fc.integer({ min: 50, max: 2000 }).map(String),
     tipo_inmueble: fc.constantFrom('casa', 'oficina', 'apartamento', 'comercio'),
+    nombre_inmueble: fc.string({ minLength: 1, maxLength: 40 }),
+    direccion_inmueble: fc.string({ maxLength: 80 }),
+    pais: fc.constantFrom('Colombia', 'México', 'Chile', 'Argentina', 'Perú', 'Brasil'),
+    moneda: fc.constantFrom('COP', 'MXN', 'CLP', 'ARS', 'PEN', 'BRL'),
+    periodo: fc.constantFrom('mensual', 'trimestral', 'anual'),
+    mes_facturado: fc.integer({ min: 1, max: 12 }).map(String),
+    anio_facturado: fc.integer({ min: 2020, max: 2030 }).map(String),
+    etiqueta: fc.constantFrom('Residencial', 'Comercial'),
     personas_vivienda: fc.integer({ min: 1, max: 10 }).map(String),
     cantidad_equipos: fc.integer({ min: 1, max: 20 }).map(String),
     horas_alto_consumo: fc.integer({ min: 0, max: 24 }).map(String),
@@ -21,12 +29,21 @@ function arbValidFormData() {
     tiene_aire_acondicionado: fc.boolean(),
     tiene_calentador_electrico: fc.boolean(),
     electrodomesticos_eficientes: fc.boolean(),
+    tarifa_kwh: fc.double({ min: 0.01, max: 5 }).map(String),
   });
 }
 
 const EXPECTED_KEYS = [
   'consumo_kwh',
   'tipo_inmueble',
+  'nombre_inmueble',
+  'direccion_inmueble',
+  'pais',
+  'moneda',
+  'periodo',
+  'mes_facturado',
+  'anio_facturado',
+  'etiqueta',
   'personas_vivienda',
   'cantidad_equipos',
   'horas_alto_consumo',
@@ -35,10 +52,13 @@ const EXPECTED_KEYS = [
   'tiene_aire_acondicionado',
   'tiene_calentador_electrico',
   'electrodomesticos_eficientes',
+  'tarifa_kwh',
 ];
 
 const NUMERIC_FIELDS = [
   'consumo_kwh',
+  'mes_facturado',
+  'anio_facturado',
   'personas_vivienda',
   'cantidad_equipos',
   'horas_alto_consumo',
@@ -59,7 +79,7 @@ describe('buildPayload - Property-Based Tests', () => {
    * Property 4: buildPayload produces structurally complete and type-correct payloads
    *
    * For any valid form data object, buildPayload SHALL produce an object with exactly
-   * the 10 keys defined in the API contract where numeric fields are Number types,
+   * the 19 keys defined in the API contract where numeric fields are Number types,
    * toggle fields are 0 or 1 (not boolean), and tipo_inmueble is a capitalized string
    * from the valid set.
    *
@@ -70,8 +90,8 @@ describe('buildPayload - Property-Based Tests', () => {
       fc.property(arbValidFormData(), (formData) => {
         const payload = buildPayload(formData);
 
-        // Assert output has exactly 10 keys
-        expect(Object.keys(payload).length).toBe(10);
+        // Assert output has the geolocation + currency + period contract
+        expect(Object.keys(payload).length).toBe(19);
 
         // Assert all expected keys are present
         for (const key of EXPECTED_KEYS) {

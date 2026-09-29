@@ -13,12 +13,23 @@
  * @param {boolean} formData.tiene_aire_acondicionado — toggle state
  * @param {boolean} formData.tiene_calentador_electrico — toggle state
  * @param {boolean} formData.electrodomesticos_eficientes — toggle state
- * @returns {Object} payload — 10-field object matching POST /analisis-energetico contract
+ * @returns {Object} payload — 19-field object matching POST /analisis-energetico contract
  */
 export function buildPayload(formData) {
+  const tipoInmueble = capitalize(formData.tipo_inmueble || "Casa");
+  const etiqueta = formData.etiqueta || inferEtiqueta(tipoInmueble);
+
   return {
     consumo_kwh: Number(formData.consumo_kwh),
-    tipo_inmueble: capitalize(formData.tipo_inmueble),
+    tipo_inmueble: tipoInmueble,
+    nombre_inmueble: String(formData.nombre_inmueble || "").trim(),
+    direccion_inmueble: String(formData.direccion_inmueble || "").trim() || null,
+    pais: String(formData.pais || "Colombia").trim(),
+    moneda: String(formData.moneda || "COP").trim().toUpperCase(),
+    periodo: String(formData.periodo || "mensual").trim().toLowerCase(),
+    mes_facturado: Number(formData.mes_facturado),
+    anio_facturado: Number(formData.anio_facturado),
+    etiqueta: String(etiqueta).trim(),
     personas_vivienda: Number(formData.personas_vivienda),
     cantidad_equipos: Number(formData.cantidad_equipos),
     horas_alto_consumo: Number(formData.horas_alto_consumo),
@@ -30,6 +41,11 @@ export function buildPayload(formData) {
     electrodomesticos_eficientes: formData.electrodomesticos_eficientes ? 1 : 0,
     tarifa_kwh: formData.tarifa_kwh === "" ? 0.75 : Number(formData.tarifa_kwh),
   };
+}
+
+function inferEtiqueta(tipoInmueble) {
+  const tipo = String(tipoInmueble || "").toLowerCase();
+  return tipo === "oficina" || tipo === "comercio" ? "Comercial" : "Residencial";
 }
 
 /**

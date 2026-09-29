@@ -7,6 +7,14 @@ const currency = new Intl.NumberFormat("es-DO", {
   maximumFractionDigits: 2,
 });
 
+function formatMoney(value, currencyCode) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: currencyCode || "USD",
+    maximumFractionDigits: 2,
+  }).format(value ?? 0);
+}
+
 export default function ResultPanel({ result, error, loading }) {
   if (loading) {
     return (
@@ -39,7 +47,16 @@ export default function ResultPanel({ result, error, loading }) {
     );
   }
 
-  const { categoria, probabilidad, recomendaciones, costo_estimado } = result;
+  const {
+    categoria,
+    probabilidad,
+    recomendaciones,
+    costo_estimado,
+    costo_estimado_usd,
+    costo_estimado_local,
+    moneda,
+  } = result;
+  const costoUsd = costo_estimado_usd ?? costo_estimado ?? 0;
   const confianzaModelo =
     typeof probabilidad === "number" ? `${(probabilidad * 100).toFixed(1)}%` : "No disponible";
 
@@ -70,8 +87,9 @@ export default function ResultPanel({ result, error, loading }) {
       <div className="result-panel-header">
         <MeterGauge score={gaugeScore} categoria={categoria} />
         <div className="result-stat result-stat--inline">
-          <span className="result-stat-label">Costo estimado mensual</span>
-          <span className="result-stat-value mono">{currency.format(costo_estimado ?? 0)}</span>
+          <span className="result-stat-label">Costo mensual en {moneda || "USD"}</span>
+          <span className="result-stat-value mono">{formatMoney(costo_estimado_local ?? costoUsd, moneda || "USD")}</span>
+          <span className="result-stat-secondary mono">Equivalente: {currency.format(costoUsd)}</span>
         </div>
         <div className="result-stat result-stat--inline">
           <span className="result-stat-label">Confianza del modelo</span>
@@ -88,11 +106,15 @@ export default function ResultPanel({ result, error, loading }) {
         <div className="recommendations">
           <span className="eyebrow">Recomendaciones</span>
           <ul>
-            {recomendaciones.filter(Boolean).map((rec, idx) => {
+            {recomendaciones
+              .filter(Boolean)
+              .filter((rec) => !/CONVERSI[ÓO]N(?:\s+ESTIMADA)?:/i.test(rec))
+              .map((rec, idx) => {
               // Detectar si la recomendación contiene conversiones de moneda (COP, MXN, DOP, ARS)
-              const hasConversion = /CONVERSION:/i.test(rec);
+              const conversionRegex = /CONVERSI[ÓO]N(?:\s+ESTIMADA)?:/i;
+              const hasConversion = conversionRegex.test(rec) || /CONVERSION:/i.test(rec);
               if (hasConversion) {
-                const [recPart, convPart] = rec.split(/CONVERSION:/i);
+                const [recPart, convPart] = rec.split(conversionRegex);
                 const recText = recPart?.replace(/RECOMENDACION:/i, "").replace(/\*\*/g, "").trim();
                 const convLines = (convPart || "").split(/\n/).filter(l => l.trim().length > 0);
                 return (

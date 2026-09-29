@@ -56,7 +56,7 @@ El archivo cumple múltiples propósitos dentro de la configuración de la infra
 | Servicio | Imagen / Stack | Puerto | Descripción |
 |---|---|---|---|
 | `frontend-app` | React/Vite + Nginx | `80` | La variable `VITE_API_URL` es inyectada en la compilación (Build Time). |
-| `backend-springboot` | Java 21 / Spring Boot | `8080` | Lógica de negocio, autenticación JWT y persistencia en la Base de Datos Autónoma de OCI. |
+| `backend-springboot` | Java 25 / Spring Boot | `8080` | Lógica de negocio, autenticación JWT y persistencia en la Base de Datos Autónoma de OCI. |
 | `python-service` | Python (Flask/ML) | `5000` (privado) | Microservicio analítico expuesto solo para consumo interno del backend. |
 
 ### Gestión de Configuración Sensible

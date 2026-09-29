@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Cursor ###
+.cursor/
+
+### Claude ###
+.claude/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+.refact/

@@ -107,7 +107,14 @@ class AnalisisControllerPropertyTest {
                 .flatAs((c, t, p, e, h) ->
                         Combinators.combine(usoPico, antiguedad, aire, calentador, eficientes)
                                 .as((up, ant, ai, cal, ef) ->
-                                        new AnalisisRequest(c, t, p, e, h, up, ant, ai, cal, ef)));
+                                        requestWithBillingPeriod(new AnalisisRequest(c, t, p, e, h, up, ant, ai, cal, ef))));
+    }
+
+    private AnalisisRequest requestWithBillingPeriod(AnalisisRequest request) {
+        request.setNombre_inmueble("Casa Principal");
+        request.setMes_facturado(8);
+        request.setAnio_facturado(2026);
+        return request;
     }
 
     @Provide

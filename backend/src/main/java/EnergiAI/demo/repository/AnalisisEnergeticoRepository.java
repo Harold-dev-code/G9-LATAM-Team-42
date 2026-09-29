@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface AnalisisEnergeticoRepository extends JpaRepository<AnalisisEnergetico, Long> {
     List<AnalisisEnergetico> findByUsuarioIdOrderByFechaCreacionDesc(Long usuarioId);
+
+    boolean existsByInmuebleIdAndMesFacturadoAndAnioFacturado(
+            Long inmuebleId, Integer mesFacturado, Integer anioFacturado);
 }

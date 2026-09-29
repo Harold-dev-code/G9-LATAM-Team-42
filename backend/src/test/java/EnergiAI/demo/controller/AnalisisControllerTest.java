@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AnalisisController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("dev")
 public class AnalisisControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -38,6 +40,9 @@ public class AnalisisControllerTest {
     @DisplayName("Debe devolver HTTP 200 y el JSON de respuesta cuando la solicitud es válida")
     void analizarConsumo_SolicitudValida_Devuelve200() throws Exception{
         AnalisisRequest request = new AnalisisRequest(300.0, "Casa", 3, 5, 4.0, 0, 10, 0, 0, 0);
+        request.setNombre_inmueble("Casa Principal");
+        request.setMes_facturado(8);
+        request.setAnio_facturado(2026);
         AnalisisResponse responseMock = new AnalisisResponse("Eficiente", 0.75, List.of("Buen trabajo"), 225.0);
 
         Mockito.when(analisisService.procesarAnalisisEnergetico(Mockito.any(AnalisisRequest.class), Mockito.any()))

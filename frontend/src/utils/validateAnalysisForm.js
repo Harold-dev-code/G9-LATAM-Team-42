@@ -21,6 +21,29 @@
 export function validateAnalysisForm(formData) {
   const errors = {};
 
+  const paisesValidos = [
+    "Colombia", "México", "Chile", "Argentina", "Perú", "Brasil",
+    "Uruguay", "Ecuador", "Guatemala", "Honduras", "Paraguay", "Bolivia",
+    "Costa Rica", "República Dominicana", "Venezuela"
+  ];
+  const monedasValidas = ["USD", "COP", "MXN", "CLP", "ARS", "PEN", "BRL", "DOP", "CRC", "HNL", "GTQ", "PYG", "UYU", "VES", "BOB"];
+  const periodosValidos = ["mensual", "trimestral", "anual", "semanal", "bimensual"];
+  const etiquetasValidas = ["Residencial", "Comercial"];
+
+  if (!String(formData.nombre_inmueble ?? "").trim()) {
+    errors.nombre_inmueble = "Ingresa un nombre para el inmueble.";
+  }
+
+  const mesFacturado = Number(formData.mes_facturado);
+  if (!Number.isInteger(mesFacturado) || mesFacturado < 1 || mesFacturado > 12) {
+    errors.mes_facturado = "Selecciona un mes facturado válido.";
+  }
+
+  const anioFacturado = Number(formData.anio_facturado);
+  if (!Number.isInteger(anioFacturado) || anioFacturado < 2000 || anioFacturado > 2100) {
+    errors.anio_facturado = "Selecciona un año facturado válido.";
+  }
+
   // consumo_kwh: required, 50–2000
   const consumo = Number(formData.consumo_kwh);
   if (
@@ -73,9 +96,28 @@ export function validateAnalysisForm(formData) {
   const tiposValidos = ["casa", "oficina", "apartamento", "comercio"];
   if (
     !formData.tipo_inmueble ||
-    !tiposValidos.includes(formData.tipo_inmueble.toLowerCase())
+    !tiposValidos.includes(String(formData.tipo_inmueble).toLowerCase())
   ) {
     errors.tipo_inmueble = "Selecciona un tipo de inmueble válido.";
+  }
+
+  if (!formData.pais || !paisesValidos.includes(String(formData.pais).trim())) {
+    errors.pais = "Selecciona un país válido.";
+  }
+
+  const monedaNormalizada = String(formData.moneda ?? "").trim().toUpperCase();
+  if (!formData.moneda || !monedasValidas.includes(monedaNormalizada)) {
+    errors.moneda = "Selecciona una moneda válida.";
+  }
+
+  const periodoNormalizado = String(formData.periodo ?? "").trim().toLowerCase();
+  if (!formData.periodo || !periodosValidos.includes(periodoNormalizado)) {
+    errors.periodo = "Selecciona un período válido.";
+  }
+
+  const etiquetaNormalizada = String(formData.etiqueta ?? "").trim();
+  if (!formData.etiqueta || !etiquetasValidas.includes(etiquetaNormalizada)) {
+    errors.etiqueta = "Selecciona una etiqueta válida.";
   }
 
   // antiguedad_inmueble: optional, but if provided must be 2–31
@@ -87,6 +129,13 @@ export function validateAnalysisForm(formData) {
     if (isNaN(antiguedad) || antiguedad < 2 || antiguedad > 31) {
       errors.antiguedad_inmueble =
         "La antigüedad debe estar entre 2 y 31 años.";
+    }
+  }
+
+  if (formData.tarifa_kwh != null && formData.tarifa_kwh !== "") {
+    const tarifa = Number(formData.tarifa_kwh);
+    if (isNaN(tarifa) || tarifa <= 0 || tarifa > 5) {
+      errors.tarifa_kwh = "La tarifa debe estar entre 0.01 y 5 USD.";
     }
   }
 

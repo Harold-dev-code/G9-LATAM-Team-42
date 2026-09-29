@@ -9,7 +9,7 @@ import HomeView from "./components/HomeView";
 import ReportsView from "./components/ReportsView";
 import LoginView from "./components/LoginView";
 import RegisterView from "./components/RegisterView";
-import { postAnalisis, ApiError } from "./api/energiaiClient";
+import { postAnalisis, getHistorial, ApiError } from "./api/energiaiClient";
 
 function getInitialTheme() {
   const stored = window.localStorage.getItem("energiai-theme");
@@ -71,6 +71,22 @@ export default function App() {
     setSubmitting(true);
     setError(null);
     try {
+      const historial = await getHistorial(user?.userId);
+      const isDuplicate = historial.some((registro) => {
+        const normalize = (value) => String(value ?? "").trim().toLowerCase();
+        const sameNumber = (left, right) => Number(left ?? 0) === Number(right ?? 0);
+
+        return (
+          normalize(registro.nombreInmueble || registro.inmueble?.nombre) === normalize(payload.nombre_inmueble) &&
+          sameNumber(registro.mesFacturado, payload.mes_facturado) &&
+          sameNumber(registro.anioFacturado, payload.anio_facturado)
+        );
+      });
+
+      if (isDuplicate) {
+        throw new Error("Ya existe un análisis para este inmueble en el mes y año seleccionados.");
+      }
+
       const response = await postAnalisis(payload, user?.userId);
       setResult(response);
       setHistoryRefreshKey((key) => key + 1);
@@ -79,7 +95,7 @@ export default function App() {
       setError(
         err instanceof ApiError
           ? err.message
-          : "No se pudo conectar con el servicio de JouleAI. Intenta de nuevo más tarde."
+          : err.message || "No se pudo conectar con el servicio de JouleAI. Intenta de nuevo más tarde."
       );
     } finally {
       setSubmitting(false);
