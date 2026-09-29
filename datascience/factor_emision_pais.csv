@@ -1,0 +1,22 @@
+﻿pais,iso_alpha3,factor_emision_g_co2_kwh,factor_emision_kg_co2_kwh,anio,fuente,licencia
+Argentina,ARG,345,0.345,2024,Ember Yearly Electricity Data,CC BY 4.0
+Bolivia,BOL,495,0.495,2024,Ember Yearly Electricity Data,CC BY 4.0
+Brasil,BRA,106,0.106,2024,Ember Yearly Electricity Data,CC BY 4.0
+Chile,CHL,261,0.261,2024,Ember Yearly Electricity Data,CC BY 4.0
+Colombia,COL,298,0.298,2024,Ember Yearly Electricity Data,CC BY 4.0
+Ecuador,ECU,204,0.204,2024,Ember Yearly Electricity Data,CC BY 4.0
+Perú,PER,259,0.259,2024,Ember Yearly Electricity Data,CC BY 4.0
+Uruguay,URY,70,0.07,2024,Ember Yearly Electricity Data,CC BY 4.0
+Paraguay,PRY,25,0.025,2024,Ember Yearly Electricity Data,CC BY 4.0
+Venezuela,VEN,86,0.086,2024,Ember Yearly Electricity Data,CC BY 4.0
+México,MEX,483,0.483,2024,Ember Yearly Electricity Data,CC BY 4.0
+Guatemala,GTM,301,0.301,2024,Ember Yearly Electricity Data,CC BY 4.0
+Honduras,HND,322,0.322,2024,Ember Yearly Electricity Data,CC BY 4.0
+El Salvador,SLV,113,0.113,2024,Ember Yearly Electricity Data,CC BY 4.0
+Nicaragua,NIC,301,0.301,2024,Ember Yearly Electricity Data,CC BY 4.0
+Costa Rica,CRI,25,0.025,2024,Ember Yearly Electricity Data,CC BY 4.0
+Panamá,PAN,221,0.221,2024,Ember Yearly Electricity Data,CC BY 4.0
+Belice,BLZ,170,0.17,2024,Ember Yearly Electricity Data,CC BY 4.0
+Cuba,CUB,643,0.643,2024,Ember Yearly Electricity Data,CC BY 4.0
+República Dominicana,DOM,568,0.568,2024,Ember Yearly Electricity Data,CC BY 4.0
+Haití,HTI,535,0.535,2024,Ember Yearly Electricity Data,CC BY 4.0
