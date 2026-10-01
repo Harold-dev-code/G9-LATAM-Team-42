@@ -1,0 +1,58 @@
+{
+  "version": "1.0.0",
+  "fecha_entrenamiento": "2026-09-29T00:24:47.372867",
+  "modelo_nombre": "SVM",
+  "tipo_modelo": "SVC",
+  "features": [
+    "tipo_inmueble",
+    "personas_vivienda",
+    "antiguedad_inmueble",
+    "cantidad_equipos",
+    "tiene_aire_acondicionado",
+    "tiene_calentador_electrico",
+    "electrodomesticos_eficientes",
+    "uso_horario_pico",
+    "horas_alto_consumo",
+    "consumo_kwh"
+  ],
+  "columnas_categoricas": [
+    "tipo_inmueble"
+  ],
+  "columnas_numericas": [
+    "personas_vivienda",
+    "antiguedad_inmueble",
+    "cantidad_equipos",
+    "tiene_aire_acondicionado",
+    "tiene_calentador_electrico",
+    "electrodomesticos_eficientes",
+    "uso_horario_pico",
+    "horas_alto_consumo",
+    "consumo_kwh"
+  ],
+  "target": "categoria_eficiencia",
+  "clases": [
+    "Eficiente",
+    "Ineficiente",
+    "Moderado"
+  ],
+  "metricas": {
+    "tiempo_entrenamiento": 0.9992754459381104,
+    "val_accuracy": 0.96,
+    "val_f1_macro": 0.9599340148605511,
+    "val_f1_weighted": 0.9600571227204313,
+    "val_balanced_acc": 0.9599440791561941,
+    "val_mcc": 0.9400291018789959,
+    "test_accuracy": 0.95,
+    "test_f1_macro": 0.950230621193526,
+    "test_f1_weighted": 0.9503972748958531,
+    "test_balanced_acc": 0.9500649305311373,
+    "test_mcc": 0.9255289268753737
+  },
+  "dataset_size": 5000,
+  "train_size": 3000,
+  "val_size": 1000,
+  "test_size": 1000,
+  "random_state": 42,
+  "hash_modelo": "a87c088a27b321022cf9ffa737452598608b384f9b6845005d797cf80d161a00",
+  "usa_escalado": true
+}
