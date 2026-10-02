@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import useHistorial from "../hooks/useHistorial";
 import StatusBadge from "./StatusBadge";
+import { formatBillingPeriod, getBillingPeriod, sortByBillingPeriod } from "../utils/billingPeriod";
 import {
   ResponsiveContainer,
   BarChart,
@@ -18,14 +19,6 @@ const currency = new Intl.NumberFormat("es-DO", {
   maximumFractionDigits: 2,
 });
 
-const dateFormatter = new Intl.DateTimeFormat("es-DO", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
 const MONTHS = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
@@ -38,22 +31,17 @@ function getInmuebleNombre(registro) {
 
 function filterByPeriodo(registros, mes, anio) {
   return registros.filter((r) => {
-    if (mes === "todos" && anio === "todos") return true;
-    const fecha = r.mesFacturado && r.anioFacturado
-      ? { mes: r.mesFacturado, anio: r.anioFacturado }
-      : r.fechaCreacion
-        ? { mes: new Date(r.fechaCreacion).getMonth() + 1, anio: new Date(r.fechaCreacion).getFullYear() }
-        : null;
-    return fecha && (mes === "todos" || Number(mes) === Number(fecha.mes))
-      && (anio === "todos" || Number(anio) === Number(fecha.anio));
+    const periodo = getBillingPeriod(r);
+    if (!periodo) return false;
+    return (mes === "todos" || Number(mes) === periodo.month)
+      && (anio === "todos" || Number(anio) === periodo.year);
   });
 }
 
 function toCsv(registros) {
-  const header = ["Fecha", "Mes facturado", "Inmueble", "Consumo (kWh)", "Categoría", "Costo estimado (USD)"];
+  const header = ["Período facturado", "Inmueble", "Consumo (kWh)", "Categoría", "Costo estimado (USD)"];
   const rows = registros.map((r) => [
-    r.fechaCreacion ? new Date(r.fechaCreacion).toISOString() : "",
-    `${r.mesFacturado ?? ""}/${r.anioFacturado ?? ""}`,
+    formatBillingPeriod(r),
     getInmuebleNombre(r),
     r.consumoKwh ?? "",
     r.categoria ?? "",
@@ -103,7 +91,7 @@ export default function ReportsView({ refreshKey }) {
   }, [filtrados]);
 
   function handleDownloadCsv() {
-    const csv = toCsv([...filtrados].sort((a, b) => new Date(a.fechaCreacion) - new Date(b.fechaCreacion)));
+    const csv = toCsv(sortByBillingPeriod(filtrados));
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -257,19 +245,16 @@ export default function ReportsView({ refreshKey }) {
               <h3 className="report-chart-title">Evolución del consumo</h3>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart
-                  data={[...filtrados]
-                    .sort((a, b) => new Date(a.fechaCreacion) - new Date(b.fechaCreacion))
+                  data={sortByBillingPeriod(filtrados)
                     .map((r) => ({
-                      fecha: r.fechaCreacion
-                        ? new Date(r.fechaCreacion).toLocaleDateString("es-DO", { day: "2-digit", month: "short" })
-                        : "—",
+                      periodo: formatBillingPeriod(r),
                       consumo: r.consumoKwh || 0,
                       costo: r.costoEstimadoMensual || 0,
                     }))}
                   margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-soft)" />
-                  <XAxis dataKey="fecha" tick={{ fontSize: 11 }} />
+                  <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
                   <Legend />
@@ -286,7 +271,7 @@ export default function ReportsView({ refreshKey }) {
             <table className="history-table">
               <thead>
                 <tr>
-                  <th>Fecha</th>
+                  <th>Período facturado</th>
                   <th>Inmueble</th>
                   <th>Consumo</th>
                   <th>Categoría</th>
@@ -294,13 +279,10 @@ export default function ReportsView({ refreshKey }) {
                 </tr>
               </thead>
               <tbody>
-                {[...filtrados]
-                  .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
+                {sortByBillingPeriod(filtrados, true)
                   .map((r) => (
                     <tr key={r.id}>
-                      <td className="mono">
-                        {r.fechaCreacion ? dateFormatter.format(new Date(r.fechaCreacion)) : "—"}
-                      </td>
+                      <td className="mono">{formatBillingPeriod(r)}</td>
                       <td>{getInmuebleNombre(r)}</td>
                       <td className="mono">{r.consumoKwh} kWh</td>
                       <td>

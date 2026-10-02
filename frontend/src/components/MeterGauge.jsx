@@ -9,6 +9,11 @@ const CENTER_X = 100;
 const CENTER_Y = 100;
 const RADIUS = 78;
 const STROKE = 14;
+const CATEGORY_POSITIONS = {
+  Eficiente: 16.5,
+  Moderado: 50,
+  Ineficiente: 83.5,
+};
 
 function polarToCartesian(angleDeg) {
   const rad = ((angleDeg - 180) * Math.PI) / 180;
@@ -26,28 +31,24 @@ function fullArcPath() {
   return `M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 0 1 ${end.x} ${end.y}`;
 }
 
-export default function MeterGauge({ score, categoria, size = 220 }) {
+export default function MeterGauge({ categoria, size = 220 }) {
   const gradientId = useId();
   const [animatedScore, setAnimatedScore] = useState(0);
+  const position = CATEGORY_POSITIONS[categoria] ?? 50;
 
   useEffect(() => {
-    const clamped = Math.max(0, Math.min(100, score ?? 0));
-    const frame = requestAnimationFrame(() => setAnimatedScore(clamped));
+    const frame = requestAnimationFrame(() => setAnimatedScore(position));
     return () => cancelAnimationFrame(frame);
-  }, [score]);
+  }, [position]);
 
-  const clampedForNeedle = Math.max(0, Math.min(100, score ?? 0));
   // The arc goes from left (green, 0%) to right (red, 100%) below the center.
   // Needle must point downward into the arc.
-  // At score=0: needle points left-down (toward green end).
-  // At score=100: needle points right-down (toward red end).
   const needleAngle = (animatedScore / 100) * 180; // 0° to 180°
   const needleRad = (needleAngle * Math.PI) / 180; // Convert to radians, 0=right, 90=down, 180=left
   const needleLen = RADIUS - 18;
   const tipX = CENTER_X - needleLen * Math.cos(needleRad); // negative cos so 0°=left, 180°=right
   const tipY = CENTER_Y + needleLen * Math.sin(needleRad); // positive sin so needle points down
 
-  const overflow = (score ?? 0) > 100;
   const renderedHeight = Math.round((size * VIEW_H) / VIEW_W);
 
   return (
@@ -57,7 +58,7 @@ export default function MeterGauge({ score, categoria, size = 220 }) {
         height={renderedHeight}
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         role="img"
-        aria-label={`Medidor de eficiencia: ${Math.round(score ?? 0)} puntos, categoría ${categoria || "sin calcular"}`}
+        aria-label={`Medidor de eficiencia: categoría ${categoria || "sin calcular"}`}
       >
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -85,12 +86,6 @@ export default function MeterGauge({ score, categoria, size = 220 }) {
         />
         <circle cx={CENTER_X} cy={CENTER_Y} r="6" fill="var(--text)" />
       </svg>
-      <div className="meter-gauge-readout">
-        <span className="meter-gauge-value mono">
-          {overflow ? "100+" : Math.round(clampedForNeedle)}
-        </span>
-        <span className="meter-gauge-unit">puntos</span>
-      </div>
     </div>
   );
 }
