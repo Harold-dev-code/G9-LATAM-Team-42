@@ -3,7 +3,8 @@ version: '3.8'
 services:
   servicio-data:
     build:
-      context: ./datascience/inference_service
+      context: ./datascience
+      dockerfile: inference_service/Dockerfile
     container_name: python-service
     restart: always
     env_file:

@@ -11,7 +11,7 @@ import json
 
 import pytest
 
-from app import app
+from app import app, model_metadata
 
 
 @pytest.fixture
@@ -51,6 +51,12 @@ class TestHealthEndpoint:
         data = response.get_json()
         assert data["status"] == "ok"
         assert data["model_loaded"] is True
+
+    def test_svc_v2_metadata_is_loaded(self):
+        assert model_metadata["modelo_nombre"] == "SVM"
+        assert model_metadata["tipo_modelo"] == "SVC"
+        assert model_metadata["usa_escalado"] is True
+        assert len(model_metadata["features"]) == 10
 
 
 class TestPredictEndpoint:

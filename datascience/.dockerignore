@@ -1,0 +1,7 @@
+inference_service/.venv/
+inference_service/__pycache__/
+inference_service/.pytest_cache/
+inference_service/.hypothesis/
+inference_service/tests/
+JouleAI_G9_v2.ipynb
+factor_emision_pais.csv
