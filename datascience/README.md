@@ -4,7 +4,7 @@
 
 **Objetivo:** construir una solución inteligente capaz de analizar patrones de consumo energético, clasificar perfiles de eficiencia, generar recomendaciones, estimar costos y dejar el resultado listo para integración mediante API REST.
 
-**Modelo elegido para producción:** Random Forest.
+**Modelo actual de producción:** SVC (SVM con kernel RBF), versión 2.0.0. El pipeline serializado incluye codificación y escalado.
 
 ---
 
@@ -32,7 +32,7 @@ La base utilizada contiene:
 
 - **5,000 registros**
 - **14 variables originales**
-- **5 variables utilizadas por el modelo de producción**
+- **10 variables utilizadas por el modelo de producción**
 
 ### Variables del endpoint
 
@@ -279,121 +279,41 @@ Si utilizáramos únicamente Accuracy, una clase mayoritaria podría ocultar un 
 
 ---
 
-## 13. Comparación de 8 modelos
+## 13. Modelo de producción
 
-Se compararon ocho algoritmos supervisados:
-
-1. Logistic Regression
-2. Decision Tree
-3. Random Forest
-4. Extra Trees
-5. Gradient Boosting
-6. HistGradientBoosting
-7. KNN
-8. SVC con kernel RBF
-
-La comparación se realizó mediante **validación cruzada estratificada de 5 folds**.
-
-### Resultado principal
-
-- **SVC-RBF:** F1 Macro CV ≈ **0.9170**
-- **Random Forest:** F1 Macro CV ≈ **0.9151**
-
-Diferencia:
-
-**0.0020**
-
-> **Interpretación:** SVC-RBF obtuvo el mayor F1 puro, pero la diferencia frente a Random Forest es mínima.
+El modelo activo es SVC con kernel RBF. Para esta versión, las métricas de producción se toman de `modelo_energia_v2.0.0_metadata.json`, que acompaña al artefacto serializado. Los experimentos exploratorios del notebook no reemplazan esos metadatos como referencia del artefacto desplegado.
 
 ---
 
-## 14. ¿Por qué Random Forest fue elegido?
+## 14. Modelo seleccionado para producción
 
-Aquí se diferencia entre:
+El artefacto desplegado es `modelo_energia_v2.0.0.pkl`, identificado en sus metadatos como un clasificador **SVC** (SVM con kernel RBF). El pipeline serializado ejecuta One-Hot Encoding para `tipo_inmueble` y `StandardScaler` para las variables numéricas; Flask envía las 10 variables originales y no vuelve a escalar los datos.
 
-- **modelo con mayor métrica pura**;
-- **modelo más conveniente para producción**.
-
-### SVC-RBF
-
-- F1 Macro CV: **0.9170**
-- Mejor F1 puro.
-
-### Random Forest
-
-- F1 Macro CV: **0.9151**
-- Diferencia frente a SVC-RBF: **0.0020**
-
-Se definió un umbral de equivalencia de **0.01**.
-
-Como Random Forest se encuentra claramente dentro de ese margen, se evaluaron criterios adicionales.
-
-### Razones para elegir Random Forest
-
-- rendimiento prácticamente equivalente;
-- mayor interpretabilidad;
-- importancia de variables más directa;
-- explicación más sencilla ante un jurado no técnico;
-- mantenimiento simple;
-- integración sencilla con el Back-End;
-- muy adecuado para datos tabulares;
-- ampliamente utilizado y conocido.
-
-### Decisión final
-
-**Random Forest es el modelo seleccionado para producción.**
-
-**SVC-RBF queda documentado como el modelo con mayor F1 puro.**
-
-> **Interpretación:** no se eligió Random Forest por conveniencia. Se aplicó una decisión multicriterio de ingeniería, donde una diferencia de solo 0.002 no justifica sacrificar interpretabilidad y mantenibilidad.
+Las métricas registradas para esta versión son F1 Macro de **0.9599** en validación y **0.9502** en test. El metadata también registra `usa_escalado: true` y un hash SHA-256 para comprobar que el artefacto corresponde a esos metadatos.
 
 ---
 
-## 15. Calibración de probabilidades
+## 15. Probabilidades
 
-La API no devuelve únicamente una categoría. También devuelve una probabilidad.
-
-Por eso se evaluó la calibración.
-
-### Resultado
-
-El Log Loss en Validation mejoró aproximadamente de:
-
-- **0.228**
-- a **0.167**
-
-Aunque el F1 puede disminuir ligeramente con calibración, la probabilidad queda mejor ajustada.
-
-> **Interpretación:** si el sistema dice que un usuario tiene 80% de probabilidad de pertenecer a una categoría, es importante que esa confianza sea razonable.
+El SVC se serializó con `probability=True`, por lo que `predict_proba()` devuelve las probabilidades de clase consumidas por la API. Los metadatos no registran una calibración externa adicional.
 
 ---
 
 ## 16. Evaluación final en Test
 
-El Random Forest calibrado fue evaluado con los 750 registros de Test.
+El SVC v2.0.0 fue evaluado con los conjuntos de validación y test registrados en metadata: 1,000 filas en cada conjunto.
 
 ### Métricas
 
-| Métrica | Resultado |
-|---|---:|
-| Accuracy | **0.928** |
-| F1 Macro | **0.919** |
-| Balanced Accuracy | **0.923** |
-| Log Loss | **0.181** |
+| Métrica | Validación | Test |
+|---|---:|---:|
+| Accuracy | **0.960** | **0.950** |
+| F1 Macro | **0.9599** | **0.9502** |
+| F1 Weighted | **0.9601** | **0.9504** |
+| Balanced Accuracy | **0.9599** | **0.9501** |
+| MCC | **0.9400** | **0.9255** |
 
-### Matriz de confusión
-
-| Real / Predicho | Eficiente | Moderado | Ineficiente |
-|---|---:|---:|---:|
-| Eficiente | 120 | 11 | 0 |
-| Moderado | 15 | 227 | 10 |
-| Ineficiente | 0 | 18 | 349 |
-
-### Lectura
-
-El modelo clasifica especialmente bien la categoría **Ineficiente** y mantiene un desempeño equilibrado para las otras dos clases.
-
-> **Interpretación:** Test confirma que Random Forest no solo es más fácil de explicar. También mantiene un rendimiento predictivo sólido sobre datos que no participaron en su selección.
+Estas cifras corresponden al artefacto y hash declarados en los metadatos.
 
 ---
 
@@ -533,7 +453,7 @@ API REST
   ↓
 Validación del JSON
   ↓
-Pipeline + Random Forest
+Pipeline SVC v2.0.0 (One-Hot Encoding + StandardScaler)
   ↓
 Categoría + Probabilidad
   ↓
@@ -569,18 +489,6 @@ El proyecto incluye:
 
 ### Modelo final
 
-**Random Forest**
+**SVC v2.0.0 (SVM con kernel RBF), con escalado numérico dentro del pipeline.**
 
-### Justificación final
-
-SVC-RBF obtuvo el mayor F1 Macro, pero Random Forest alcanzó un rendimiento prácticamente equivalente.
-
-La diferencia de F1 fue de apenas **0.002**, por lo que se priorizó:
-
-- interpretabilidad;
-- facilidad de explicación;
-- mantenimiento;
-- integración;
-- análisis de importancia de variables.
-
-**Random Forest ofrece el mejor equilibrio entre desempeño predictivo y viabilidad de producción para el MVP de JouleAI.**
+El artefacto de producción y `modelo_energia_v2.0.0_metadata.json` son la referencia para la carga, el orden de features y las métricas del servicio Flask.

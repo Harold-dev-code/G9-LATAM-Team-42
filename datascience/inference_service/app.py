@@ -7,6 +7,8 @@ Exposes:
 - GET /health: Returns service health status.
 """
 
+import hashlib
+import json
 import sys
 import logging
 
@@ -14,8 +16,8 @@ import joblib
 import pandas as pd
 from flask import Flask, jsonify, request
 
-from config import MODEL_PATH, PORT
-from feature_engine import FEATURE_ORDER, compute_derived_features
+from config import MODEL_METADATA_PATH, MODEL_PATH, PORT
+from feature_engine import select_model_features
 from validation import validate_prediction_request
 
 # Configure logging
@@ -26,16 +28,38 @@ app = Flask(__name__)
 
 # Load the model at startup
 model = None
+model_metadata = None
 
 
 def load_model():
-    """Load the ML model pipeline from disk."""
-    global model
+    """Load the model and its metadata, verifying the expected preprocessing."""
+    global model, model_metadata
     try:
+        with open(MODEL_METADATA_PATH, encoding="utf-8") as metadata_file:
+            loaded_metadata = json.load(metadata_file)
+
+        with open(MODEL_PATH, "rb") as model_file:
+            model_hash = hashlib.file_digest(model_file, "sha256").hexdigest()
+        if loaded_metadata.get("hash_modelo") != model_hash:
+            raise ValueError("Model file hash does not match its metadata")
+        if loaded_metadata.get("modelo_nombre") != "SVM":
+            raise ValueError("The configured model must be the SVM v2 model")
+        if loaded_metadata.get("tipo_modelo") != "SVC":
+            raise ValueError("The configured model type must be SVC")
+        if loaded_metadata.get("usa_escalado") is not True:
+            raise ValueError("The configured SVC model must include feature scaling")
+        if not isinstance(loaded_metadata.get("features"), list):
+            raise ValueError("Model metadata must declare an ordered features list")
+
         model = joblib.load(MODEL_PATH)
-        logger.info("Model loaded successfully from %s", MODEL_PATH)
+        model_metadata = loaded_metadata
+        logger.info(
+            "Loaded %s model from %s",
+            model_metadata["modelo_nombre"],
+            MODEL_PATH,
+        )
     except FileNotFoundError:
-        logger.error("Model file not found at %s", MODEL_PATH)
+        logger.error("Model or metadata file not found")
         sys.exit(1)
     except Exception as e:
         logger.error("Failed to load model: %s", str(e))
@@ -57,11 +81,12 @@ def predict():
     if errors:
         return jsonify({"error": "Validation failed", "details": errors}), 400
 
-    # Compute derived features (returns dict with all 15 features)
-    features = compute_derived_features(cleaned_data)
+    # The serialized pipeline handles encoding and scaling internally.
+    feature_names = model_metadata["features"]
+    features = select_model_features(cleaned_data, feature_names)
 
     # Create DataFrame with features in the correct order for the model
-    feature_df = pd.DataFrame([features], columns=FEATURE_ORDER)
+    feature_df = pd.DataFrame([features], columns=feature_names)
 
     # Run prediction
     try:

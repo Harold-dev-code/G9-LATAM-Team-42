@@ -11,24 +11,11 @@ import {
 import StatusBadge from "./StatusBadge";
 import useHistorial from "../hooks/useHistorial";
 import { deleteAnalisis, ApiError } from "../api/energiaiClient";
+import { formatBillingPeriod, sortByBillingPeriod } from "../utils/billingPeriod";
 
 function getInmuebleNombre(registro) {
   return registro.nombreInmueble || registro.inmueble?.nombre || registro.tipoInmueble || "Sin nombre";
 }
-
-function getPeriodoFacturado(registro) {
-  if (registro.mesFacturado && registro.anioFacturado) {
-    return `${String(registro.mesFacturado).padStart(2, "0")}/${registro.anioFacturado}`;
-  }
-  return "—";
-}
-
-const dateFormatter = new Intl.DateTimeFormat("es-DO", {
-  day: "2-digit",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-});
 
 const currency = new Intl.NumberFormat("es-DO", {
   style: "currency",
@@ -65,23 +52,22 @@ export default function HistoryView({ refreshKey, user }) {
   );
 
   const chartData = useMemo(() => {
-    return [...registrosFiltrados]
-      .sort((a, b) => new Date(a.fechaCreacion) - new Date(b.fechaCreacion))
+    return sortByBillingPeriod(registrosFiltrados)
       .map((r) => ({
-        fecha: r.fechaCreacion ? dateFormatter.format(new Date(r.fechaCreacion)) : "—",
+        periodo: formatBillingPeriod(r),
         consumo: r.consumoKwh,
       }));
   }, [registrosFiltrados]);
 
   const sortedForTable = useMemo(
-    () => [...registrosFiltrados].sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion)),
+    () => sortByBillingPeriod(registrosFiltrados, true),
     [registrosFiltrados]
   );
 
   async function handleDelete(registro) {
-    const fecha = registro.fechaCreacion ? dateFormatter.format(new Date(registro.fechaCreacion)) : "este análisis";
+    const periodo = formatBillingPeriod(registro);
     const confirmed = window.confirm(
-      `¿Eliminar el análisis del ${fecha} (${registro.consumoKwh} kWh)? Esta acción no se puede deshacer y dejará de aparecer en tu historial y reportes.`
+      `¿Eliminar el análisis del período ${periodo} (${registro.consumoKwh} kWh)? Esta acción no se puede deshacer y dejará de aparecer en tu historial y reportes.`
     );
     if (!confirmed) return;
 
@@ -116,7 +102,7 @@ export default function HistoryView({ refreshKey, user }) {
         <h3>Todavía no hay análisis guardados</h3>
         <p className="text-muted">
           Cada análisis que calcules desde “Nuevo análisis” quedará registrado aquí, con
-          fecha y evolución de tu consumo.
+          su período facturado y evolución de tu consumo.
         </p>
       </div>
     );
@@ -124,6 +110,16 @@ export default function HistoryView({ refreshKey, user }) {
 
   return (
     <div className="history-view">
+      {deleteError && <p className="field-error">{deleteError}</p>}
+
+      <div className="form-field history-filter">
+        <label htmlFor="historial-inmueble">Inmueble</label>
+        <select id="historial-inmueble" value={inmuebleFiltro} onChange={(e) => setInmuebleFiltro(e.target.value)}>
+          <option value="todos">Todos los inmuebles</option>
+          {inmuebles.map((inmueble) => <option key={inmueble} value={inmueble}>{inmueble}</option>)}
+        </select>
+      </div>
+
       <div className="chart-card">
         <span className="eyebrow">Consumo por análisis (kWh)</span>
         <div className="chart-wrap">
@@ -131,7 +127,7 @@ export default function HistoryView({ refreshKey, user }) {
             <LineChart data={chartData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="var(--border-soft)" vertical={false} />
               <XAxis
-                dataKey="fecha"
+                dataKey="periodo"
                 tick={{ fill: "var(--text-faint)", fontSize: 11 }}
                 axisLine={{ stroke: "var(--border)" }}
                 tickLine={false}
@@ -159,23 +155,12 @@ export default function HistoryView({ refreshKey, user }) {
         </div>
       </div>
 
-      {deleteError && <p className="field-error">{deleteError}</p>}
-
-      <div className="form-field history-filter">
-        <label htmlFor="historial-inmueble">Inmueble</label>
-        <select id="historial-inmueble" value={inmuebleFiltro} onChange={(e) => setInmuebleFiltro(e.target.value)}>
-          <option value="todos">Todos los inmuebles</option>
-          {inmuebles.map((inmueble) => <option key={inmueble} value={inmueble}>{inmueble}</option>)}
-        </select>
-      </div>
-
       <div className="history-table-wrap">
         <table className="history-table">
           <thead>
             <tr>
-              <th>Fecha</th>
+              <th>Período facturado</th>
               <th>Inmueble</th>
-              <th>Período</th>
               <th>Consumo</th>
               <th>Categoría</th>
               <th>Costo est.</th>
@@ -185,11 +170,8 @@ export default function HistoryView({ refreshKey, user }) {
           <tbody>
             {sortedForTable.map((r) => (
               <tr key={r.id}>
-                <td className="mono">
-                  {r.fechaCreacion ? dateFormatter.format(new Date(r.fechaCreacion)) : "—"}
-                </td>
+                <td className="mono">{formatBillingPeriod(r)}</td>
                 <td>{getInmuebleNombre(r)}</td>
-                <td className="mono">{getPeriodoFacturado(r)}</td>
                 <td className="mono">{r.consumoKwh} kWh</td>
                 <td>
                   <StatusBadge categoria={r.categoria} size="sm" />
@@ -201,7 +183,7 @@ export default function HistoryView({ refreshKey, user }) {
                     className="history-delete-btn"
                     onClick={() => handleDelete(r)}
                     disabled={deletingId === r.id}
-                    aria-label={`Eliminar análisis del ${r.fechaCreacion ? dateFormatter.format(new Date(r.fechaCreacion)) : "registro"}`}
+                    aria-label={`Eliminar análisis del período ${formatBillingPeriod(r)}`}
                     title="Eliminar este análisis"
                   >
                     {deletingId === r.id ? "…" : "✕"}

@@ -317,7 +317,7 @@ export default function HomeView({ onNavigate, refreshKey, user }) {
           <div className="home-grid">
             <div className="result-panel home-last-result">
               <div className="result-panel-header">
-                <MeterGauge score={stats.last.probabilidad} categoria={stats.last.categoria} size={160} />
+                <MeterGauge categoria={stats.last.categoria} size={160} />
                 <div className="result-panel-heading">
                   <span className="eyebrow">Último análisis</span>
                   <StatusBadge categoria={stats.last.categoria} size="lg" />

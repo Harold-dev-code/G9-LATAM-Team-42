@@ -22,7 +22,7 @@ El proyecto es desarrollado como parte de la simulación laboral de **No Country
 
 ## ¿Qué hace JouleAI?
 Cuando un usuario se registra y envía sus datos de consumo, el sistema procesa la información y devuelve en segundos:
-1. **Clasificación de Perfil:** Determina si el consumo es *Eficiente*, *Moderado* o *Ineficiente* usando un modelo de Machine Learning (Árbol de Decisión).
+1. **Clasificación de Perfil:** Determina si el consumo es *Eficiente*, *Moderado* o *Ineficiente* usando el modelo SVC v2.0.0 (SVM con kernel RBF).
 2. **Recomendaciones de Ahorro:** Entrega consejos prácticos y personalizados generados por IA (Gemini), adaptados al nivel de eficiencia.
 3. **Costo Estimado:** Calcula una proyección del valor de la factura mensual basado en la tarifa configurable por el usuario (default $0.75 USD por kWh).
 4. **Conversión de Moneda:** Gemini sugiere equivalentes del costo en 13 monedas de LATAM (ARS, BRL, CLP, COP, DOP, HNL, MXN, PEN, PYG, UYU, VES + USD).
@@ -40,7 +40,7 @@ Frontend (React 19 + Vite 8)
 Backend (Java 21 + Spring Boot 4.1)
     ↓ POST /predict
 Servicio Flask (Python 3.12 + scikit-learn)
-    → Modelo Árbol de Decisión (15 features, pipeline .pkl)
+    → Modelo SVC v2.0.0 (10 variables, pipeline con escalado incluido)
 Backend ← Flask (categoria + probabilidad)
     ↓ Gemini API (recomendación + conversión de moneda LATAM)
 Backend → Frontend (categoria + probabilidad + recomendaciones + costo)
@@ -149,7 +149,8 @@ G9-LATAM-Team-42/
 ├── backend/                 → Spring Boot 4.1 (API + auth + Gemini)
 ├── datascience/             → Modelo ML + Servicio Flask
 │   ├── inference_service/   → Flask API de predicción
-│   └── modelo_arbol_decision_pipeline.pkl
+│   ├── modelo_energia_v2.0.0.pkl
+│   └── modelo_energia_v2.0.0_metadata.json
 ├── docs/                    → Contrato API + historial de desarrollo
 ├── docker-compose.yml       → Orquestación de servicios
 ├── .env.example             → Template de variables de entorno
@@ -207,7 +208,8 @@ G9-LATAM-Team-42/
 ├── backend/           → Spring Boot 4.1 (API)
 ├── datascience/       → Modelo ML + Servicio Flask
 │   ├── inference_service/  → Flask API de predicción
-│   └── modelo_arbol_decision_pipeline.pkl
+│   ├── modelo_energia_v2.0.0.pkl
+│   └── modelo_energia_v2.0.0_metadata.json
 ├── docs/              → Contrato API y documentación técnica
 └── README.md
 ```
