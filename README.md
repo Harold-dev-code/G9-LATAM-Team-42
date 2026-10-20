@@ -108,8 +108,14 @@ python app.py
 ```bash
 cd backend
 chmod +x mvnw
-GEMINI_API_KEY=tu-key SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+EXCHANGERATE_API_KEY='<tu-clave>' \
+GEMINI_API_KEY='<tu-clave>' \
+./mvnw spring-boot:run \
+  -Dspring-boot.run.profiles=dev \
+  -DskipTests
 ```
+
+Las asignaciones antes de `./mvnw` se heredan como variables de entorno del proceso. No es necesario crear un `.env` para ejecutar el backend de esta manera.
 
 **Terminal 3 — Frontend:**
 ```bash
@@ -118,16 +124,28 @@ npm install
 npm run dev
 ```
 
-Abrir `http://localhost:5173`
+Abrir `http://localhost:5173`. Para que la aplicación funcione, verifica que `VITE_API_URL` en `frontend/.env.local` apunte al backend (por defecto, `http://localhost:8080`).
 
-### Opción B: Docker Compose (un comando)
+### Opción B: Docker Compose
+
+Compose no hereda automáticamente las variables que se usaron al iniciar Maven en otra terminal. Para Docker, crea el archivo `.env` en la raíz a partir de la plantilla y agrega tus claves:
+
 ```bash
 cp .env.example .env
-# Editar .env con tu GEMINI_API_KEY
-docker compose up --build
+# Editar .env y reemplazar los valores de ejemplo por tus claves
+docker compose config --quiet
+docker compose up --build -d
+docker compose ps
+docker compose logs --tail=100 servicio-data backend-springboot frontend-app
 ```
 
-Abrir `http://localhost:3000`
+Abrir `http://localhost/`. El Compose publica el frontend en el puerto `80` y el backend en `8080`; el servicio Python está disponible solo dentro de la red Docker. `VITE_API_URL` se incorpora al compilar el frontend, así que reconstruye las imágenes si cambias su valor.
+
+El archivo `.env` es local y no debe subirse al repositorio. Para detener los servicios:
+
+```bash
+docker compose down
+```
 
 ---
 
@@ -213,4 +231,3 @@ G9-LATAM-Team-42/
 ├── docs/              → Contrato API y documentación técnica
 └── README.md
 ```
-
