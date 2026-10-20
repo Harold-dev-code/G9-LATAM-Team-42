@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,6 +55,42 @@ public class AnalisisServiceTest {
 
         assertEquals("Ineficiente", response.getCategoria());
         assertEquals(0.789, response.getProbabilidad());
+    }
+
+    @Test
+    @DisplayName("Debe calcular la huella con el factor del país y reportar su fuente")
+    void procesar_ConsumoConPaisConocido_CalcularHuellaDeCarbono() {
+        AnalisisRequest request = new AnalisisRequest(
+                350.0, "Casa", "Colombia", "COP", "mensual", "Residencial",
+                4, 8, 5.0, 0, 10, 0, 0, 0, 0.75);
+        Mockito.when(dataScienceClient.obtenerPrediccion(Mockito.any()))
+                .thenReturn(new PrediccionResponse("Moderado", 0.8, List.of()));
+        Mockito.when(tipoDeCambioService.obtenerTasasLatam(Mockito.anyString()))
+                .thenReturn(Map.of("COP", 1.0));
+
+        AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request, null);
+
+        assertEquals(104.3, response.getHuella_carbono_kg());
+        assertEquals(0.298, response.getFactor_emision_kg_co2_kwh());
+        assertEquals(2024, response.getAnio_factor_emision());
+        assertEquals("Ember Yearly Electricity Data", response.getFuente_factor_emision());
+    }
+
+    @Test
+    @DisplayName("Debe omitir la estimación cuando el país no tiene factor disponible")
+    void procesar_PaisSinFactor_NoInventarHuellaDeCarbono() {
+        AnalisisRequest request = new AnalisisRequest(
+                350.0, "Casa", "Pais desconocido", "COP", "mensual", "Residencial",
+                4, 8, 5.0, 0, 10, 0, 0, 0, 0.75);
+        Mockito.when(dataScienceClient.obtenerPrediccion(Mockito.any()))
+                .thenReturn(new PrediccionResponse("Moderado", 0.8, List.of()));
+        Mockito.when(tipoDeCambioService.obtenerTasasLatam(Mockito.anyString()))
+                .thenReturn(Map.of());
+
+        AnalisisResponse response = analisisService.procesarAnalisisEnergetico(request, null);
+
+        assertEquals(null, response.getHuella_carbono_kg());
+        assertEquals(null, response.getFactor_emision_kg_co2_kwh());
     }
 
         @Test

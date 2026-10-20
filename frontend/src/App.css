@@ -706,6 +706,116 @@
   color: var(--text);
 }
 
+.carbon-footprint {
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 18px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+}
+
+.carbon-footprint-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.carbon-footprint-level {
+  padding: 4px 10px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.carbon-footprint-level--low {
+  color: var(--eficiente);
+  border-color: var(--eficiente-border);
+  background: var(--eficiente-bg);
+}
+
+.carbon-footprint-level--moderate {
+  color: var(--moderado);
+  border-color: var(--moderado-border);
+  background: var(--moderado-bg);
+}
+
+.carbon-footprint-level--high {
+  color: var(--ineficiente);
+  border-color: var(--ineficiente-border);
+  background: var(--ineficiente-bg);
+}
+
+.carbon-footprint-value {
+  margin: 12px 0 10px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: clamp(1.25rem, 4vw, 1.8rem);
+  font-weight: 600;
+}
+
+.carbon-footprint-value span {
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.carbon-footprint-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.carbon-footprint-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.8s cubic-bezier(.2,.9,.25,1);
+}
+
+.carbon-footprint-fill--low {
+  background: var(--mint);
+}
+
+.carbon-footprint-fill--moderate {
+  background: var(--yellow);
+}
+
+.carbon-footprint-fill--high {
+  background: var(--coral);
+}
+
+.carbon-footprint-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.carbon-footprint-caption,
+.carbon-footprint-disclaimer {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.carbon-footprint-disclaimer {
+  margin-top: 3px;
+  color: var(--text-faint);
+}
+
+.carbon-footprint-unavailable {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .recommendations {
   display: flex;
   flex-direction: column;
