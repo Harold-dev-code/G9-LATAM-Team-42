@@ -1,5 +1,6 @@
 import MeterGauge from "./MeterGauge";
 import StatusBadge from "./StatusBadge";
+import CarbonFootprintIndicator from "./CarbonFootprintIndicator";
 
 const currency = new Intl.NumberFormat("es-DO", {
   style: "currency",
@@ -88,6 +89,8 @@ export default function ResultPanel({ result, error, loading }) {
           <span className="result-stat-value mono">{confianzaModelo}</span>
         </div>
       </div>
+
+      <CarbonFootprintIndicator result={result} />
 
       {recomendaciones && recomendaciones.length > 0 && (
         <div className="recommendations result-panel-recommendations">

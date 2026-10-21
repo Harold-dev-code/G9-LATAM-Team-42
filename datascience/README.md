@@ -2,7 +2,7 @@
 
 **G9 LATAM Team 42 · Hackathon**
 
-**Objetivo:** construir una solución inteligente capaz de analizar patrones de consumo energético, clasificar perfiles de eficiencia, generar recomendaciones, estimar costos y dejar el resultado listo para integración mediante API REST.
+**Objetivo:** entrenar y servir el modelo de clasificación de perfiles energéticos que utiliza JouleAI. El servicio de inferencia valida los datos y devuelve categoría y probabilidad; el backend se encarga del costo, Gemini, conversión de moneda y huella de carbono.
 
 **Modelo actual de producción:** SVC (SVM con kernel RBF), versión 2.0.0. El pipeline serializado incluye codificación y escalado.
 
@@ -34,17 +34,16 @@ La base utilizada contiene:
 - **14 variables originales**
 - **10 variables utilizadas por el modelo de producción**
 
-### Variables del endpoint
+### Variables del modelo de producción
 
-El modelo final utiliza únicamente las variables que realmente estarán disponibles en la API:
+Flask recibe las diez variables originales que consume el SVC v2.0.0:
 
-- `consumo_kwh`
-- `uso_horario_pico`
-- `cantidad_equipos`
-- `tipo_inmueble`
-- `horas_alto_consumo`
+- `consumo_kwh` y `tipo_inmueble`;
+- `personas_vivienda`, `cantidad_equipos` y `horas_alto_consumo`;
+- `uso_horario_pico` y `antiguedad_inmueble`;
+- `tiene_aire_acondicionado`, `tiene_calentador_electrico` y `electrodomesticos_eficientes`.
 
-> **Interpretación:** esta decisión evita entrenar con variables que después no estarán disponibles cuando el usuario utilice la aplicación.
+El formulario completo de la aplicación también incluye país, moneda, tarifa, período y datos del inmueble. Esos campos se procesan en el backend y no se envían al modelo Flask.
 
 ---
 
@@ -205,11 +204,11 @@ El criterio interno utiliza un score basado en:
 
 ## 9. Separación de datos
 
-El dataset se dividió de forma estratificada:
+El dataset se dividió de forma estratificada según los metadatos del artefacto v2.0.0:
 
-- **70% Train:** 3,500 registros
-- **15% Validation:** 750 registros
-- **15% Test:** 750 registros
+- **60% Train:** 3,000 registros
+- **20% Validation:** 1,000 registros
+- **20% Test:** 1,000 registros
 
 ### Objetivo de cada conjunto
 
@@ -337,85 +336,52 @@ Se utilizó **Permutation Importance** para determinar qué variables influyen m
 
 ---
 
-## 18. Motor de recomendaciones
+## 18. Recomendaciones en la aplicación
 
-Las recomendaciones no son iguales para todos los usuarios.
-
-Se utilizan:
-
-- categoría predicha;
-- consumo observado;
-- percentiles por tipo de inmueble;
-- horario pico;
-- cantidad de equipos;
-- horas de alto consumo.
-
-### Ejemplos
-
-- reducir actividades durante horario pico;
-- distribuir actividades de alto consumo;
-- revisar equipos que permanecen encendidos;
-- priorizar equipos de mayor eficiencia.
-
-> **Interpretación:** el objetivo es convertir la predicción del modelo en acciones concretas.
+El endpoint Flask `/predict` devuelve únicamente `categoria` y `probabilidad`. En la aplicación, el backend agrega una recomendación breve de Gemini usando la categoría, el consumo, la cantidad de equipos y el costo mensual estimado. Si Gemini no está disponible, el backend agrega un mensaje local de respaldo. Gemini no se usa para inferir la categoría ni para calcular la huella.
 
 ---
 
-## 19. Estimación financiera
+## 19. Costo y huella de carbono
 
-Se utiliza la tarifa de referencia:
+Estos cálculos pertenecen al backend, no al modelo Flask:
 
-**$0.75 por kWh**
+- **Costo:** `consumo_kwh × tarifa_kwh`; la tarifa ingresada por la interfaz se expresa en USD/kWh y su valor predeterminado es `0.75`.
+- **Huella:** `consumo_kwh × factor_emision_kg_co2_kwh`, con factores eléctricos nacionales de 2024 de Ember. El backend usa esos factores y el CSV [`factor_emision_pais.csv`](./factor_emision_pais.csv) registra sus valores, fuente y licencia CC BY 4.0.
 
-### Ejemplo
-
-Para:
-
-`consumo_kwh = 420`
-
-el costo estimado es:
-
-**420 × 0.75 = $315.00 mensuales**
-
-Además, el sistema puede simular escenarios de reducción de:
-
-- 5%;
-- 10%;
-- 15%.
-
-> **Interpretación:** esto permite comunicar el impacto energético en una medida que el usuario entiende fácilmente: dinero.
+La huella es una estimación basada en consumo y factor promedio del país; no es una medición directa del inmueble.
 
 ---
 
 ## 20. Respuesta JSON
 
-### Entrada
+### Entrada (Flask: `POST /predict`)
 
 ```json
 {
   "consumo_kwh": 420,
-  "uso_horario_pico": true,
+  "uso_horario_pico": 1,
   "cantidad_equipos": 10,
   "tipo_inmueble": "Casa",
-  "horas_alto_consumo": 8
+  "horas_alto_consumo": 8,
+  "personas_vivienda": 4,
+  "antiguedad_inmueble": 15,
+  "tiene_aire_acondicionado": 0,
+  "tiene_calentador_electrico": 1,
+  "electrodomesticos_eficientes": 0
 }
 ```
 
-### Salida esperada
+### Salida de Flask
 
 ```json
 {
   "categoria": "Moderado",
-  "probabilidad": 0.82,
-  "recomendaciones": [
-    "Reducir el uso de equipos durante el horario pico",
-    "Distribuir las actividades de mayor consumo"
-  ],
-  "costo_estimado_mensual": 315.00
+  "probabilidad": 0.82
 }
 ```
 
-> **Interpretación:** el resultado queda preparado para ser consumido directamente por el Back-End mediante una API REST.
+La probabilidad está entre 0 y 1 y corresponde a la clase predicha. El contrato completo, incluidos rangos y valores predeterminados, está en [`../docs/contrato-api.md`](../docs/contrato-api.md).
 
 ---
 
@@ -423,14 +389,13 @@ Además, el sistema puede simular escenarios de reducción de:
 
 El modelo final se guarda para evitar volver a entrenarlo cada vez que la API recibe una solicitud.
 
-### Artefactos
+### Artefactos de producción
 
-- `jouleai_modelo_random_forest_v6.joblib`
-- `jouleai_model_metadata_v6_rf.json`
-- `jouleai_benchmarks_recomendaciones_v6.json`
-- `jouleai_leaderboard_8_modelos_v6.csv`
+- `inference_service/modelo_energia_v2.0.0.pkl`: pipeline SVC serializado.
+- `modelo_energia_v2.0.0_metadata.json`: orden de features, métricas, clases y hash SHA-256 del modelo.
+- `factor_emision_pais.csv`: factores de emisión eléctrica por país para el cálculo del backend.
 
-> **Interpretación:** el Back-End puede cargar el modelo serializado y utilizar exactamente el mismo preprocesamiento desarrollado en el notebook.
+El arranque Flask comprueba que el hash del artefacto coincida con los metadatos y que el pipeline corresponda al modelo SVC esperado.
 
 ---
 
@@ -456,10 +421,9 @@ Validación del JSON
 Pipeline SVC v2.0.0 (One-Hot Encoding + StandardScaler)
   ↓
 Categoría + Probabilidad
+Backend: Gemini + costo + conversión monetaria + huella de carbono
   ↓
-Recomendaciones + Costo
-  ↓
-Respuesta JSON
+Respuesta completa al frontend
 ```
 
 ---
@@ -492,3 +456,17 @@ El proyecto incluye:
 **SVC v2.0.0 (SVM con kernel RBF), con escalado numérico dentro del pipeline.**
 
 El artefacto de producción y `modelo_energia_v2.0.0_metadata.json` son la referencia para la carga, el orden de features y las métricas del servicio Flask.
+
+## Ejecutar el servicio de inferencia localmente
+
+Requisitos: Python 3.12 y `pip`.
+
+```bash
+cd datascience/inference_service
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+Flask escucha en `http://localhost:5000`. Comprueba su disponibilidad con `GET /health`; el endpoint de inferencia es `POST /predict`. Para iniciar la aplicación completa, sigue la guía de ejecución desde la raíz en [`../README.md`](../README.md).

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   servicio-data:
     build:
@@ -20,7 +18,7 @@ services:
     env_file:
       - .env
     environment:
-      - PYTHON_SERVICE_URL=http://servicio-data:5000/predict
+      - DATASCIENCE_SERVICE_URL=http://servicio-data:5000
       - PUBLIC_IP=${PUBLIC_IP}
     depends_on:
       - servicio-data

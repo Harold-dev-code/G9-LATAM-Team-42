@@ -27,6 +27,10 @@ public class AnalisisResponse {
     private Double costo_estimado_local;
     private String pais;
     private String moneda;
+    private Double huella_carbono_kg;
+    private Double factor_emision_kg_co2_kwh;
+    private Integer anio_factor_emision;
+    private String fuente_factor_emision;
 
     // Constructor vacío
     public AnalisisResponse() {
@@ -103,5 +107,37 @@ public class AnalisisResponse {
 
     public void setMoneda(String moneda) {
         this.moneda = moneda;
+    }
+
+    public Double getHuella_carbono_kg() {
+        return huella_carbono_kg;
+    }
+
+    public void setHuella_carbono_kg(Double huella_carbono_kg) {
+        this.huella_carbono_kg = huella_carbono_kg;
+    }
+
+    public Double getFactor_emision_kg_co2_kwh() {
+        return factor_emision_kg_co2_kwh;
+    }
+
+    public void setFactor_emision_kg_co2_kwh(Double factor_emision_kg_co2_kwh) {
+        this.factor_emision_kg_co2_kwh = factor_emision_kg_co2_kwh;
+    }
+
+    public Integer getAnio_factor_emision() {
+        return anio_factor_emision;
+    }
+
+    public void setAnio_factor_emision(Integer anio_factor_emision) {
+        this.anio_factor_emision = anio_factor_emision;
+    }
+
+    public String getFuente_factor_emision() {
+        return fuente_factor_emision;
+    }
+
+    public void setFuente_factor_emision(String fuente_factor_emision) {
+        this.fuente_factor_emision = fuente_factor_emision;
     }
 }

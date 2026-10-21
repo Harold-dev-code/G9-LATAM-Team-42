@@ -17,13 +17,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
 public class AnalisisService {
+
+    private static final int ANIO_FACTOR_EMISION = 2024;
+    private static final String FUENTE_FACTOR_EMISION = "Ember Yearly Electricity Data";
+    private static final Map<String, Double> FACTORES_EMISION_KG_CO2_KWH = Map.ofEntries(
+            Map.entry("argentina", 0.345), Map.entry("bolivia", 0.495),
+            Map.entry("brasil", 0.106), Map.entry("chile", 0.261),
+            Map.entry("colombia", 0.298), Map.entry("ecuador", 0.204),
+            Map.entry("peru", 0.259), Map.entry("uruguay", 0.070),
+            Map.entry("paraguay", 0.025), Map.entry("venezuela", 0.086),
+            Map.entry("mexico", 0.483), Map.entry("guatemala", 0.301),
+            Map.entry("honduras", 0.322), Map.entry("el salvador", 0.113),
+            Map.entry("nicaragua", 0.301), Map.entry("costa rica", 0.025),
+            Map.entry("panama", 0.221), Map.entry("belice", 0.170),
+            Map.entry("cuba", 0.643), Map.entry("republica dominicana", 0.568),
+            Map.entry("haiti", 0.535));
 
     private static final Map<String, String> MONEDAS_POR_PAIS = Map.ofEntries(
             Map.entry("Colombia", "COP"), Map.entry("México", "MXN"),
@@ -181,11 +200,29 @@ public class AnalisisService {
                 recomendacionesFinales,
                 costo_estimado
         );
+        Double factorEmision = FACTORES_EMISION_KG_CO2_KWH.get(normalizarPais(request.getPais()));
+        if (factorEmision != null) {
+            double huellaCarbono = BigDecimal.valueOf(request.getConsumo_kwh())
+                    .multiply(BigDecimal.valueOf(factorEmision))
+                    .setScale(2, RoundingMode.HALF_UP)
+                    .doubleValue();
+            response.setHuella_carbono_kg(huellaCarbono);
+            response.setFactor_emision_kg_co2_kwh(factorEmision);
+            response.setAnio_factor_emision(ANIO_FACTOR_EMISION);
+            response.setFuente_factor_emision(FUENTE_FACTOR_EMISION);
+        }
         response.setCosto_estimado_usd(costo_estimado);
         response.setCosto_estimado_local(costo_estimado * tasaLocal);
         response.setPais(request.getPais());
         response.setMoneda(request.getMoneda());
         return response;
+    }
+
+    private String normalizarPais(String pais) {
+        return Normalizer.normalize(pais, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .trim()
+                .toLowerCase(Locale.ROOT);
     }
 
     private Inmueble resolverInmueble(AnalisisRequest request, Long usuarioId) {
